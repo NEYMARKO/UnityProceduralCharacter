@@ -8,6 +8,8 @@ using UnityEngine.InputSystem;
 public class CameraMovement : MonoBehaviour
 {
     private GameObject parent;
+    Vector2 lookDirection;
+    bool cameraMoved = false;
 
     [Header("Position")]
     [SerializeField]
@@ -30,13 +32,11 @@ public class CameraMovement : MonoBehaviour
     int controlMultiplier = 1;
     #endregion
 
-    Vector2 lookDirection;
-
-
     #region InputParameters
     PlayerInput playerInput;
     private InputAction lookAroundAction;
     #endregion
+
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -49,6 +49,7 @@ public class CameraMovement : MonoBehaviour
     }
     private void Update()
     {
+        FollowTarget(yaw, pitch);
         LookAround();
     }
 
@@ -65,9 +66,10 @@ public class CameraMovement : MonoBehaviour
         if (lookDirection != Vector2.zero)
         {
             transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
+            ModifyRotationValues();
+            FollowTarget(yaw, pitch);
+            SetCameraMoved(true);
         }
-        ModifyRotationValues();
-        FollowTarget(yaw, pitch);
     }
 
     private void ModifyRotationValues()
@@ -79,6 +81,21 @@ public class CameraMovement : MonoBehaviour
         pitch %= 360f;
 
         pitch = Mathf.Clamp(pitch, minPitchValue, maxPitchValue);
+    }
+    public void SetCameraMoved(bool hasMoved)
+    {
+        cameraMoved = hasMoved;
+        if (!cameraMoved) transform.rotation = parent.transform.rotation;
+    }
+    
+    public bool CameraMoved()
+    {
+        return cameraMoved;
+    }
+
+    public Quaternion GetCameraYRotation()
+    {
+        return Quaternion.Euler(new Vector3(0, yaw, 0));
     }
 
     private void OnEnable()

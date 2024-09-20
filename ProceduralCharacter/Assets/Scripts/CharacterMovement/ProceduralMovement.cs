@@ -8,10 +8,11 @@ public class ProceduralMovement : MonoBehaviour
     PlayerInput playerInput;
 
     // movement
-    [Header("Movement variables")]
+    [Header("Movement")]
     [SerializeField]
     float movementSpeed;
 
+    [Header("Rotation")]
     [SerializeField]
     float rotationSpeed;
 
@@ -19,17 +20,17 @@ public class ProceduralMovement : MonoBehaviour
 
     private InputAction movementAction;
 
+    CameraMovement _camera;
     private void Awake()
     {
         playerInput = new PlayerInput();
         movementAction = playerInput.Player.Move;
+        _camera = GetComponentInChildren<CameraMovement>();
     }
-    // Start is called before the first frame update
     void Start()
     {
     }
 
-    // Update is called once per frame
     void Update()
     {
         Move();
@@ -40,9 +41,23 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();   
         if (movementDirection != Vector2.zero)
         {
-            transform.position += new Vector3(movementDirection.x, 0, movementDirection.y).normalized * movementSpeed * Time.deltaTime;
-            Debug.Log("MOVEMENT DIRECTION: " +  movementDirection);
+            if (_camera.CameraMoved())
+            {
+                AlignCharacterRotationToCamera();
+                _camera.SetCameraMoved(false);
+            }
+            //if (transform.forward != _camera.transform.forward) transform.rotation *= _camera.GetCameraYRotation();
+            float angle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
+            Debug.Log("ANGLE: " + angle);
+            Quaternion thumbstickRotation = Quaternion.Euler(0, angle, 0);
+            transform.position += (thumbstickRotation * transform.forward).normalized * movementSpeed * Time.deltaTime;
+            //Debug.Log("MOVEMENT DIRECTION: " + movementDirection);
         }
+    }
+
+    private void AlignCharacterRotationToCamera()
+    {
+        transform.rotation = _camera.GetCameraYRotation();
     }
 
     private void OnEnable()
