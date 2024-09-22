@@ -21,6 +21,12 @@ public class ProceduralMovement : MonoBehaviour
     private InputAction movementAction;
 
     CameraMovement _camera;
+
+    bool characterMoved = false;
+
+    float thumbstickAngle = 0f;
+    float lastAngle = 0f;
+
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -34,6 +40,7 @@ public class ProceduralMovement : MonoBehaviour
     void Update()
     {
         Move();
+        //if (!CharacterMoving()) lastAngle = 0f;
     }
 
     void Move()
@@ -46,15 +53,43 @@ public class ProceduralMovement : MonoBehaviour
                 AlignCharacterRotationToCamera();
                 _camera.SetCameraMoved(false);
             }
-            //if (transform.forward != _camera.transform.forward) transform.rotation *= _camera.GetCameraYRotation();
-            float angle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
-            Debug.Log("ANGLE: " + angle);
-            Quaternion thumbstickRotation = Quaternion.Euler(0, angle, 0);
-            transform.position += (thumbstickRotation * transform.forward).normalized * movementSpeed * Time.deltaTime;
-            //Debug.Log("MOVEMENT DIRECTION: " + movementDirection);
+
+            transform.position += CalculateMovementDirection() * movementSpeed * Time.deltaTime;
+            SetCharacterMoved(true);
         }
     }
 
+    private void RotateCharacter(float rotationAngle)
+    {
+        Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
+        transform.rotation = thumbstickRotation * transform.rotation;
+        _camera.LockCameraRotation(Quaternion.Inverse(thumbstickRotation));
+    }
+    private Vector3 CalculateMovementDirection()
+    {
+        // angle of thumbstick during input
+        thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
+        //Debug.Log("ROTATION AMOUNT: " + (thumbstickAngle - lastAngle)); 
+        RotateCharacter(thumbstickAngle - lastAngle);
+        lastAngle = thumbstickAngle;
+        // player forward actor rotated to move in direction of thumbstick relative to it's own rotation
+        //return (thumbstickRotation * transform.forward).normalized * movementSpeed * Time.deltaTime;
+        return transform.forward;
+    }
+    
+    private bool CharacterMoving()
+    {
+        return (movementAction.ReadValue<Vector2>() != Vector2.zero);
+    }
+    public void SetCharacterMoved(bool hasMoved)
+    {
+        characterMoved = hasMoved;
+    }
+
+    public bool GetCharacterMoved()
+    {
+        return characterMoved;
+    }
     private void AlignCharacterRotationToCamera()
     {
         transform.rotation = _camera.GetCameraYRotation();

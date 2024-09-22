@@ -7,7 +7,8 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    private GameObject parent;
+    private GameObject parentObject;
+    //private ProceduralMovement parent;
     Vector2 lookDirection;
     bool cameraMoved = false;
 
@@ -32,6 +33,7 @@ public class CameraMovement : MonoBehaviour
     int controlMultiplier = 1;
     #endregion
 
+    Quaternion accumulatedRotation = Quaternion.identity;
     #region InputParameters
     PlayerInput playerInput;
     private InputAction lookAroundAction;
@@ -41,22 +43,23 @@ public class CameraMovement : MonoBehaviour
     {
         playerInput = new PlayerInput();
         lookAroundAction = playerInput.Player.Look;
-        controlMultiplier = invertControls ? -1 : 1;
+        controlMultiplier = invertControls ? 1 : -1;
     }
     private void Start()
     {
-        parent = this.transform.parent.gameObject;
+        parentObject = transform.parent.gameObject;
+        //parent = gameObject.GetComponent<ProceduralMovement>();
     }
     private void Update()
     {
-        FollowTarget(yaw, pitch);
+        FollowTarget();
         LookAround();
     }
 
-    private void FollowTarget(float yaw, float pitch)
+    private void FollowTarget()
     {
-        transform.position = parent.transform.position + Quaternion.Euler(pitch, yaw, 0) * (Vector3.forward * cameraOffset.z);
-        transform.position += new Vector3(0, cameraOffset.y);
+        transform.position = parentObject.transform.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
+        transform.position += new Vector3(0, cameraOffset.y, 0);
     }
 
     public void LookAround()
@@ -67,7 +70,7 @@ public class CameraMovement : MonoBehaviour
         {
             transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
             ModifyRotationValues();
-            FollowTarget(yaw, pitch);
+            FollowTarget();
             SetCameraMoved(true);
         }
     }
@@ -76,16 +79,24 @@ public class CameraMovement : MonoBehaviour
     {
         yaw += lookDirection.x * yawRotationSpeed * Time.deltaTime * controlMultiplier;
         pitch += lookDirection.y * pitchRotationSpeed * Time.deltaTime;
-
+        //Debug.Log("YAW: " + yaw);
+        //Debug.Log("PITCH: " + pitch);
         yaw %= 360f;
         pitch %= 360f;
-
+        //yaw = Mathf.Clamp(yaw, -360f, 360f);
         pitch = Mathf.Clamp(pitch, minPitchValue, maxPitchValue);
     }
     public void SetCameraMoved(bool hasMoved)
     {
         cameraMoved = hasMoved;
-        if (!cameraMoved) transform.rotation = parent.transform.rotation;
+        if (!cameraMoved)
+        {
+            //Debug.Log("CAMERA YAW BEFFORE: " + transform.localEulerAngles.y);
+            transform.rotation = parentObject.transform.rotation;
+            //Debug.Log("PARENT YAW: " + parentObject.transform.localEulerAngles.y);
+            //Debug.Log("CAMERA YAW AFTER: " + transform.localEulerAngles.y);
+            accumulatedRotation = Quaternion.identity;
+        }
     }
     
     public bool CameraMoved()
@@ -95,9 +106,20 @@ public class CameraMovement : MonoBehaviour
 
     public Quaternion GetCameraYRotation()
     {
+        // cancel effect of accumulated rotation got from locking camera relative rotation
+
+        //return Quaternion.Inverse(accumulatedRotation) * Quaternion.Euler(new Vector3(0, yaw, 0));
         return Quaternion.Euler(new Vector3(0, yaw, 0));
     }
 
+    public void LockCameraRotation(Quaternion followRotation)
+    {
+        transform.rotation = followRotation * transform.rotation;
+        accumulatedRotation = followRotation * accumulatedRotation;
+
+        Debug.Log("ACCUMULATED ROTATION FROM MOVEMENT: " +  accumulatedRotation.eulerAngles.y);
+        //yaw = transform.localEulerAngles.y;
+    }
     private void OnEnable()
     {
         lookAroundAction.Enable();
