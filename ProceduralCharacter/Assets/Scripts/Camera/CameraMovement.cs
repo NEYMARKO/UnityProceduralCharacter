@@ -7,10 +7,12 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    private GameObject parentObject;
     //private ProceduralMovement parent;
     Vector2 lookDirection;
     bool cameraMoved = false;
+
+    [SerializeField]
+    GameObject targetObject;
 
     [Header("Position")]
     [SerializeField]
@@ -33,6 +35,7 @@ public class CameraMovement : MonoBehaviour
     int controlMultiplier = 1;
     #endregion
 
+    Quaternion followRotation;
     Quaternion accumulatedRotation = Quaternion.identity;
     #region InputParameters
     PlayerInput playerInput;
@@ -47,18 +50,18 @@ public class CameraMovement : MonoBehaviour
     }
     private void Start()
     {
-        parentObject = transform.parent.gameObject;
         //parent = gameObject.GetComponent<ProceduralMovement>();
     }
     private void Update()
     {
         FollowTarget();
         LookAround();
+        DrawRays();
     }
 
     private void FollowTarget()
     {
-        transform.position = parentObject.transform.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
+        transform.position = targetObject.transform.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
         transform.position += new Vector3(0, cameraOffset.y, 0);
     }
 
@@ -68,9 +71,8 @@ public class CameraMovement : MonoBehaviour
 
         if (lookDirection != Vector2.zero)
         {
-            transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
             ModifyRotationValues();
-            FollowTarget();
+            transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
             SetCameraMoved(true);
         }
     }
@@ -79,11 +81,10 @@ public class CameraMovement : MonoBehaviour
     {
         yaw += lookDirection.x * yawRotationSpeed * Time.deltaTime * controlMultiplier;
         pitch += lookDirection.y * pitchRotationSpeed * Time.deltaTime;
-        //Debug.Log("YAW: " + yaw);
-        //Debug.Log("PITCH: " + pitch);
+       
         yaw %= 360f;
         pitch %= 360f;
-        //yaw = Mathf.Clamp(yaw, -360f, 360f);
+
         pitch = Mathf.Clamp(pitch, minPitchValue, maxPitchValue);
     }
     public void SetCameraMoved(bool hasMoved)
@@ -91,10 +92,7 @@ public class CameraMovement : MonoBehaviour
         cameraMoved = hasMoved;
         if (!cameraMoved)
         {
-            //Debug.Log("CAMERA YAW BEFFORE: " + transform.localEulerAngles.y);
-            transform.rotation = parentObject.transform.rotation;
-            //Debug.Log("PARENT YAW: " + parentObject.transform.localEulerAngles.y);
-            //Debug.Log("CAMERA YAW AFTER: " + transform.localEulerAngles.y);
+            transform.rotation = targetObject.transform.rotation;
             accumulatedRotation = Quaternion.identity;
         }
     }
@@ -107,18 +105,25 @@ public class CameraMovement : MonoBehaviour
     public Quaternion GetCameraYRotation()
     {
         // cancel effect of accumulated rotation got from locking camera relative rotation
-
         //return Quaternion.Inverse(accumulatedRotation) * Quaternion.Euler(new Vector3(0, yaw, 0));
         return Quaternion.Euler(new Vector3(0, yaw, 0));
     }
 
-    public void LockCameraRotation(Quaternion followRotation)
+    public void LockCameraRotation(Quaternion playerRotation)
     {
-        transform.rotation = followRotation * transform.rotation;
+        // rotate camera opposite to player rotation direction to keep it focused on player
+        followRotation = Quaternion.Inverse(playerRotation);
+        //transform.rotation = followRotation * transform.rotation;
         accumulatedRotation = followRotation * accumulatedRotation;
+    }
 
-        Debug.Log("ACCUMULATED ROTATION FROM MOVEMENT: " +  accumulatedRotation.eulerAngles.y);
-        //yaw = transform.localEulerAngles.y;
+    private void DrawRays()
+    {
+        float length = 10f;
+        Quaternion accumulatedDirection = Quaternion.Inverse(accumulatedRotation) * Quaternion.Euler(new Vector3(0, yaw, 0));
+        Debug.DrawRay(targetObject.transform.position, accumulatedDirection * transform.forward * length, Color.red);
+        Quaternion cameraRotation = Quaternion.Euler(new Vector3(0, yaw, 0));
+        Debug.DrawRay(targetObject.transform.position, cameraRotation * transform.forward * length, Color.green);
     }
     private void OnEnable()
     {

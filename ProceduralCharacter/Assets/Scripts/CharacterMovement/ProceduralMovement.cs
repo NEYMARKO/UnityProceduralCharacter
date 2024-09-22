@@ -20,6 +20,8 @@ public class ProceduralMovement : MonoBehaviour
 
     private InputAction movementAction;
 
+    //CameraMovement _camera;
+    [SerializeField]
     CameraMovement _camera;
 
     bool characterMoved = false;
@@ -31,16 +33,11 @@ public class ProceduralMovement : MonoBehaviour
     {
         playerInput = new PlayerInput();
         movementAction = playerInput.Player.Move;
-        _camera = GetComponentInChildren<CameraMovement>();
+        //_camera = GetComponentInChildren<CameraMovement>();
     }
-    void Start()
-    {
-    }
-
     void Update()
     {
         Move();
-        //if (!CharacterMoving()) lastAngle = 0f;
     }
 
     void Move()
@@ -51,7 +48,6 @@ public class ProceduralMovement : MonoBehaviour
             if (_camera.CameraMoved())
             {
                 AlignCharacterRotationToCamera();
-                _camera.SetCameraMoved(false);
             }
 
             transform.position += CalculateMovementDirection() * movementSpeed * Time.deltaTime;
@@ -63,13 +59,12 @@ public class ProceduralMovement : MonoBehaviour
     {
         Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
         transform.rotation = thumbstickRotation * transform.rotation;
-        _camera.LockCameraRotation(Quaternion.Inverse(thumbstickRotation));
+        _camera.LockCameraRotation(thumbstickRotation);
     }
     private Vector3 CalculateMovementDirection()
     {
         // angle of thumbstick during input
         thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
-        //Debug.Log("ROTATION AMOUNT: " + (thumbstickAngle - lastAngle)); 
         RotateCharacter(thumbstickAngle - lastAngle);
         lastAngle = thumbstickAngle;
         // player forward actor rotated to move in direction of thumbstick relative to it's own rotation
@@ -92,7 +87,12 @@ public class ProceduralMovement : MonoBehaviour
     }
     private void AlignCharacterRotationToCamera()
     {
+        //transform.rotation = _camera.GetCameraYRotation() * Quaternion.Euler(0, lastAngle, 0);
         transform.rotation = _camera.GetCameraYRotation();
+
+        lastAngle = 0f;
+        _camera.SetCameraMoved(false);
+
     }
 
     private void OnEnable()
