@@ -9,7 +9,6 @@ public class CameraMovement : MonoBehaviour
 {
     //private ProceduralMovement parent;
     Vector2 lookDirection;
-    bool cameraMoved = false;
 
     [SerializeField]
     Transform target;
@@ -50,7 +49,6 @@ public class CameraMovement : MonoBehaviour
     {
         FollowTarget();
         LookAround();
-        DrawRays();
     }
 
     private void FollowTarget()
@@ -67,7 +65,6 @@ public class CameraMovement : MonoBehaviour
         {
             ModifyRotationValues();
             transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
-            SetCameraMoved(true);
         }
     }
 
@@ -81,30 +78,12 @@ public class CameraMovement : MonoBehaviour
 
         pitch = Mathf.Clamp(pitch, minPitchValue, maxPitchValue);
     }
-    public void SetCameraMoved(bool hasMoved)
-    {
-        cameraMoved = hasMoved;
-        if (!cameraMoved)
-        {
-            //transform.rotation = target.rotation;
-        }
-    }
-    
-    public bool CameraMoved()
-    {
-        return cameraMoved;
-    }
 
     public Quaternion GetCameraYRotation()
     {
         return Quaternion.Euler(new Vector3(0, yaw, 0));
     }
 
-    private void DrawRays()
-    {
-        //Debug.DrawRay(target.position, target.rotation * target.forward * 10f, Color.red);
-        Debug.DrawRay(target.position, transform.rotation * target.forward * 10f, Color.green);
-    }
     private void OnEnable()
     {
         lookAroundAction.Enable();
