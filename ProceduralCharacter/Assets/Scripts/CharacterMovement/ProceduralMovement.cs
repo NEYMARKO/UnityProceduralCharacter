@@ -20,7 +20,6 @@ public class ProceduralMovement : MonoBehaviour
 
     private InputAction movementAction;
 
-    //CameraMovement _camera;
     [SerializeField]
     CameraMovement _camera;
 
@@ -29,15 +28,18 @@ public class ProceduralMovement : MonoBehaviour
     float thumbstickAngle = 0f;
     float lastAngle = 0f;
 
+    Quaternion targetRotation;
+
     private void Awake()
     {
         playerInput = new PlayerInput();
         movementAction = playerInput.Player.Move;
-        //_camera = GetComponentInChildren<CameraMovement>();
     }
     void Update()
     {
         Move();
+        AnimateRotation(transform.rotation, targetRotation);
+        DrawRays();
     }
 
     void Move()
@@ -45,30 +47,36 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();   
         if (movementDirection != Vector2.zero)
         {
-            if (_camera.CameraMoved())
-            {
-                AlignCharacterRotationToCamera();
-            }
-
+            //if (_camera.CameraMoved())
+            //{
+            //    AlignCharacterRotationToCamera();
+            //}
+            //else 
+            //{
+            //}
             transform.position += CalculateMovementDirection() * movementSpeed * Time.deltaTime;
             SetCharacterMoved(true);
         }
+        Debug.Log("CURRENT ROTATION: " +  transform.localEulerAngles.y);
+        Debug.Log("TARGET ROTATION: " + targetRotation.eulerAngles.y);    
+        //if (_camera.CameraMoved() &&
+        if (Quaternion.Angle(transform.rotation, targetRotation) == 0f) _camera.SetCameraMoved(false);
     }
 
     private void RotateCharacter(float rotationAngle)
     {
         Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
-        transform.rotation = thumbstickRotation * transform.rotation;
-        _camera.LockCameraRotation(thumbstickRotation);
+        targetRotation = _camera.GetCameraYRotation() * thumbstickRotation;
+        //AnimateRotation(transform.rotation, thumbstickRotation * transform.rotation);
+        //transform.rotation = thumbstickRotation * transform.rotation;
     }
     private Vector3 CalculateMovementDirection()
     {
         // angle of thumbstick during input
         thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
-        RotateCharacter(thumbstickAngle - lastAngle);
+        //RotateCharacter(thumbstickAngle - lastAngle);
+        RotateCharacter(thumbstickAngle);
         lastAngle = thumbstickAngle;
-        // player forward actor rotated to move in direction of thumbstick relative to it's own rotation
-        //return (thumbstickRotation * transform.forward).normalized * movementSpeed * Time.deltaTime;
         return transform.forward;
     }
     
@@ -87,14 +95,24 @@ public class ProceduralMovement : MonoBehaviour
     }
     private void AlignCharacterRotationToCamera()
     {
-        //transform.rotation = _camera.GetCameraYRotation() * Quaternion.Euler(0, lastAngle, 0);
-        transform.rotation = _camera.GetCameraYRotation();
+        //Debug.Log("ALIGN PLAYER ROTATION TO MOVEMENT");
+        targetRotation = _camera.GetCameraYRotation();
+        //AnimateRotation(transform.rotation, _camera.GetCameraYRotation());
+        //transform.rotation = _camera.GetCameraYRotation();
 
         lastAngle = 0f;
-        _camera.SetCameraMoved(false);
-
+        //_camera.SetCameraMoved(false);
     }
 
+    private void AnimateRotation(Quaternion startRotation, Quaternion endRotation)
+    {
+        transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
+    }
+
+    private void DrawRays()
+    {
+        Debug.DrawRay(transform.position, targetRotation * transform.forward * 10f, Color.blue);
+    }
     private void OnEnable()
     {
         movementAction.Enable();

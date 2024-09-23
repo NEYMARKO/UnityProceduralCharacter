@@ -12,7 +12,7 @@ public class CameraMovement : MonoBehaviour
     bool cameraMoved = false;
 
     [SerializeField]
-    GameObject targetObject;
+    Transform target;
 
     [Header("Position")]
     [SerializeField]
@@ -35,8 +35,6 @@ public class CameraMovement : MonoBehaviour
     int controlMultiplier = 1;
     #endregion
 
-    Quaternion followRotation;
-    Quaternion accumulatedRotation = Quaternion.identity;
     #region InputParameters
     PlayerInput playerInput;
     private InputAction lookAroundAction;
@@ -48,10 +46,6 @@ public class CameraMovement : MonoBehaviour
         lookAroundAction = playerInput.Player.Look;
         controlMultiplier = invertControls ? 1 : -1;
     }
-    private void Start()
-    {
-        //parent = gameObject.GetComponent<ProceduralMovement>();
-    }
     private void Update()
     {
         FollowTarget();
@@ -61,7 +55,7 @@ public class CameraMovement : MonoBehaviour
 
     private void FollowTarget()
     {
-        transform.position = targetObject.transform.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
+        transform.position = target.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
         transform.position += new Vector3(0, cameraOffset.y, 0);
     }
 
@@ -92,8 +86,7 @@ public class CameraMovement : MonoBehaviour
         cameraMoved = hasMoved;
         if (!cameraMoved)
         {
-            transform.rotation = targetObject.transform.rotation;
-            accumulatedRotation = Quaternion.identity;
+            //transform.rotation = target.rotation;
         }
     }
     
@@ -104,26 +97,13 @@ public class CameraMovement : MonoBehaviour
 
     public Quaternion GetCameraYRotation()
     {
-        // cancel effect of accumulated rotation got from locking camera relative rotation
-        //return Quaternion.Inverse(accumulatedRotation) * Quaternion.Euler(new Vector3(0, yaw, 0));
         return Quaternion.Euler(new Vector3(0, yaw, 0));
-    }
-
-    public void LockCameraRotation(Quaternion playerRotation)
-    {
-        // rotate camera opposite to player rotation direction to keep it focused on player
-        followRotation = Quaternion.Inverse(playerRotation);
-        //transform.rotation = followRotation * transform.rotation;
-        accumulatedRotation = followRotation * accumulatedRotation;
     }
 
     private void DrawRays()
     {
-        float length = 10f;
-        Quaternion accumulatedDirection = Quaternion.Inverse(accumulatedRotation) * Quaternion.Euler(new Vector3(0, yaw, 0));
-        Debug.DrawRay(targetObject.transform.position, accumulatedDirection * transform.forward * length, Color.red);
-        Quaternion cameraRotation = Quaternion.Euler(new Vector3(0, yaw, 0));
-        Debug.DrawRay(targetObject.transform.position, cameraRotation * transform.forward * length, Color.green);
+        //Debug.DrawRay(target.position, target.rotation * target.forward * 10f, Color.red);
+        Debug.DrawRay(target.position, transform.rotation * target.forward * 10f, Color.green);
     }
     private void OnEnable()
     {
