@@ -532,6 +532,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &772871561 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4723310668662044113, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
+  m_PrefabInstance: {fileID: 2852345032370241840}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1326437393
 GameObject:
   m_ObjectHideFlags: 0
@@ -567,7 +572,7 @@ MonoBehaviour:
   cameraOffset: {x: 0, y: 1, z: -2.5}
   yawRotationSpeed: 100
   pitchRotationSpeed: 50
-  minPitchValue: -45
+  minPitchValue: -30
   maxPitchValue: 60
   invertControls: 1
 --- !u!81 &1326437395
@@ -691,9 +696,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af680f39bb8733b41a4f17154b09a031, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementAction:
+    m_Name: Movement
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 9b9439f0-941e-40c8-b63c-b9c24b1096fb
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
   movementSpeed: 5
   rotationSpeed: 750
   _camera: {fileID: 1326437394}
+  _LLegTarget: {fileID: 772871561}
+  _RLegTarget: {fileID: 2051067453}
+  semiMinorAxis: 0.2
+  semiMajorAxis: 0.1
+  legOffset: 0.5
 --- !u!4 &1365442992 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
@@ -809,6 +828,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &2051067453 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2653452419109400907, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
+  m_PrefabInstance: {fileID: 2852345032370241840}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2852345032370241840
 PrefabInstance:
   m_ObjectHideFlags: 0

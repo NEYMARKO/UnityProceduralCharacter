@@ -7,26 +7,36 @@ public class ProceduralMovement : MonoBehaviour
 {
     PlayerInput playerInput;
 
-    // movement
     [Header("Movement")]
     [SerializeField]
+    InputAction movementAction;
+    [SerializeField]
     float movementSpeed;
+    Vector2 movementDirection;
 
     [Header("Rotation")]
     [SerializeField]
     float rotationSpeed;
+    float thumbstickAngle = 0f;
+    Quaternion targetRotation;
 
-    Vector2 movementDirection;
-
-    private InputAction movementAction;
-
+    [Header("Camera")]
     [SerializeField]
     CameraMovement _camera;
 
-    float thumbstickAngle = 0f;
-
-    Quaternion targetRotation;
-
+    [Header("Leg IK")]
+    [SerializeField]
+    Transform _LLegTarget;
+    [SerializeField]
+    Transform _RLegTarget;
+    [SerializeField]
+    float semiMinorAxis;
+    [SerializeField]
+    float semiMajorAxis;
+    [SerializeField]
+    float legOffset;
+    float t = 0f;
+    Vector3 pointOnEllipse;
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -36,6 +46,7 @@ public class ProceduralMovement : MonoBehaviour
     {
         Move();
         AnimateRotation(transform.rotation, targetRotation);
+        DrawPoints();
     }
 
     void Move()
@@ -44,6 +55,8 @@ public class ProceduralMovement : MonoBehaviour
         if (movementDirection != Vector2.zero)
         { 
             transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
+            UpdateLegPosition(_LLegTarget);
+            UpdateLegPosition(_RLegTarget);
         }
     }
 
@@ -72,6 +85,27 @@ public class ProceduralMovement : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
     }
 
+    private void UpdateLegPosition(Transform legTarget)
+    {
+        t += movementSpeed * Time.deltaTime;
+        pointOnEllipse = ConstructEllipseMovement(t);
+
+        Debug.Log("Point on ellipse: " + pointOnEllipse);
+
+        legTarget.position += (transform.rotation * pointOnEllipse * legOffset) * Time.deltaTime;
+    }
+
+    private Vector3 ConstructEllipseMovement(float t)
+    {
+        t %= (2 * Mathf.PI);
+        return new Vector3(0, semiMajorAxis * Mathf.Cos(t) * Mathf.Rad2Deg, semiMinorAxis * Mathf.Sin(t) * Mathf.Rad2Deg);
+    }
+
+    private void DrawPoints()
+    {
+        Debug.DrawLine(pointOnEllipse, pointOnEllipse + transform.forward, Color.yellow, 50f);
+        Debug.DrawLine(_LLegTarget.position, _LLegTarget.position + transform.forward, Color.red, 50f);
+    }
     private void OnEnable()
     {
         movementAction.Enable();
