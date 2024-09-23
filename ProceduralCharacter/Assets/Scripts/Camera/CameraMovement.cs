@@ -7,9 +7,10 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    private GameObject parent;
     Vector2 lookDirection;
-    bool cameraMoved = false;
+
+    [SerializeField]
+    Transform target;
 
     [Header("Position")]
     [SerializeField]
@@ -41,22 +42,18 @@ public class CameraMovement : MonoBehaviour
     {
         playerInput = new PlayerInput();
         lookAroundAction = playerInput.Player.Look;
-        controlMultiplier = invertControls ? -1 : 1;
-    }
-    private void Start()
-    {
-        parent = this.transform.parent.gameObject;
+        controlMultiplier = invertControls ? 1 : -1;
     }
     private void Update()
     {
-        FollowTarget(yaw, pitch);
+        FollowTarget();
         LookAround();
     }
 
-    private void FollowTarget(float yaw, float pitch)
+    private void FollowTarget()
     {
-        transform.position = parent.transform.position + Quaternion.Euler(pitch, yaw, 0) * (Vector3.forward * cameraOffset.z);
-        transform.position += new Vector3(0, cameraOffset.y);
+        transform.position = target.position + Quaternion.Euler(pitch, yaw, 0).normalized * (Vector3.forward * cameraOffset.z);
+        transform.position += new Vector3(0, cameraOffset.y, 0);
     }
 
     public void LookAround()
@@ -65,10 +62,8 @@ public class CameraMovement : MonoBehaviour
 
         if (lookDirection != Vector2.zero)
         {
-            transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
             ModifyRotationValues();
-            FollowTarget(yaw, pitch);
-            SetCameraMoved(true);
+            transform.rotation = Quaternion.Euler(new Vector3(pitch, yaw, 0));
         }
     }
 
@@ -76,21 +71,11 @@ public class CameraMovement : MonoBehaviour
     {
         yaw += lookDirection.x * yawRotationSpeed * Time.deltaTime * controlMultiplier;
         pitch += lookDirection.y * pitchRotationSpeed * Time.deltaTime;
-
+       
         yaw %= 360f;
         pitch %= 360f;
 
         pitch = Mathf.Clamp(pitch, minPitchValue, maxPitchValue);
-    }
-    public void SetCameraMoved(bool hasMoved)
-    {
-        cameraMoved = hasMoved;
-        if (!cameraMoved) transform.rotation = parent.transform.rotation;
-    }
-    
-    public bool CameraMoved()
-    {
-        return cameraMoved;
     }
 
     public Quaternion GetCameraYRotation()

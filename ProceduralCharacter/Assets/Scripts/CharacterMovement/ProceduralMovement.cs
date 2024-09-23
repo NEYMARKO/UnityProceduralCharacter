@@ -20,44 +20,56 @@ public class ProceduralMovement : MonoBehaviour
 
     private InputAction movementAction;
 
+    [SerializeField]
     CameraMovement _camera;
+
+    float thumbstickAngle = 0f;
+
+    Quaternion targetRotation;
+
     private void Awake()
     {
         playerInput = new PlayerInput();
         movementAction = playerInput.Player.Move;
-        _camera = GetComponentInChildren<CameraMovement>();
     }
-    void Start()
-    {
-    }
-
     void Update()
     {
         Move();
+        AnimateRotation(transform.rotation, targetRotation);
     }
 
     void Move()
     {
         movementDirection = movementAction.ReadValue<Vector2>();   
         if (movementDirection != Vector2.zero)
-        {
-            if (_camera.CameraMoved())
-            {
-                AlignCharacterRotationToCamera();
-                _camera.SetCameraMoved(false);
-            }
-            //if (transform.forward != _camera.transform.forward) transform.rotation *= _camera.GetCameraYRotation();
-            float angle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
-            Debug.Log("ANGLE: " + angle);
-            Quaternion thumbstickRotation = Quaternion.Euler(0, angle, 0);
-            transform.position += (thumbstickRotation * transform.forward).normalized * movementSpeed * Time.deltaTime;
-            //Debug.Log("MOVEMENT DIRECTION: " + movementDirection);
+        { 
+            transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
         }
     }
 
-    private void AlignCharacterRotationToCamera()
+    private void RotateCharacter(float rotationAngle)
     {
-        transform.rotation = _camera.GetCameraYRotation();
+        // rotation of the camera must be taken in consideration, otherwise
+        // rotation would be done in the world system instead of player's
+        Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
+        targetRotation = _camera.GetCameraYRotation() * thumbstickRotation;
+    }
+    private Vector3 GetForwardDirection()
+    {
+        // angle of thumbstick during input
+        thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
+        RotateCharacter(thumbstickAngle);
+        return transform.forward;
+    }
+    
+    private bool CharacterMoving()
+    {
+        return (movementAction.ReadValue<Vector2>() != Vector2.zero);
+    }
+
+    private void AnimateRotation(Quaternion startRotation, Quaternion endRotation)
+    {
+        transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
     }
 
     private void OnEnable()
