@@ -7,7 +7,6 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    //private ProceduralMovement parent;
     Vector2 lookDirection;
 
     [SerializeField]

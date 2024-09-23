@@ -43,16 +43,18 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();   
         if (movementDirection != Vector2.zero)
         { 
-            transform.position += CalculateMovementDirection() * movementSpeed * Time.deltaTime;
+            transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
         }
     }
 
     private void RotateCharacter(float rotationAngle)
     {
+        // rotation of the camera must be taken in consideration, otherwise
+        // rotation would be done in the world system instead of player's
         Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
         targetRotation = _camera.GetCameraYRotation() * thumbstickRotation;
     }
-    private Vector3 CalculateMovementDirection()
+    private Vector3 GetForwardDirection()
     {
         // angle of thumbstick during input
         thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;

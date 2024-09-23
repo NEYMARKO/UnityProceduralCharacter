@@ -692,7 +692,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 5
-  rotationSpeed: 1500
+  rotationSpeed: 750
   _camera: {fileID: 1326437394}
 --- !u!4 &1365442992 stripped
 Transform:
