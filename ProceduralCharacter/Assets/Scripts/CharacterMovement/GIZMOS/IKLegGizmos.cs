@@ -15,7 +15,8 @@ public class IKLegGizmos : MonoBehaviour
     [SerializeField]
     [Range(1.0f, 4.0f)]
     float rayPlaneDimensions;
-
+    [SerializeField]
+    bool renderSphereCast = true;
     Vector3[] raysOrigins;
     RaycastHit[] sphereCastHits;
     // Start is called before the first frame update
@@ -59,15 +60,36 @@ public class IKLegGizmos : MonoBehaviour
         }
     }
 
+    public RaycastHit[] GetKneeEmitterHits()
+    {
+        return sphereCastHits;
+    }
+
     private void OnDrawGizmos()
     {
+        if (renderSphereCast)
+        {
+            Gizmos.color = Color.black;
+            RenderSphereCast(leftKnee.position);
+            RenderSphereCast(rightKnee.position);
+        }
         if (sphereCastHits == null) return;
         Gizmos.color = Color.red;
         for (int i = 0;i < raysOrigins.Length;i++)
         {
-            Gizmos.DrawSphere(sphereCastHits[i].point, 0.1f);
-            Gizmos.DrawCube(raysOrigins[i], new Vector3(0.1f, 0.1f, 0.1f));
+            Gizmos.DrawSphere(sphereCastHits[i].point, 0.025f);
+            Gizmos.DrawCube(raysOrigins[i], new Vector3(0.025f, 0.025f, 0.025f));
             Gizmos.DrawLine(raysOrigins[i], raysOrigins[i] + Vector3.down * 1.5f);
+        }
+    }
+    private void RenderSphereCast(Vector3 kneePosition)
+    {
+        float height = kneePosition.y;
+        while (height > 0)
+        {
+            Vector3 renderPosition = kneePosition - new Vector3(0, height, 0);
+            Gizmos.DrawSphere(renderPosition, 0.1f);
+            height -= 0.1f;
         }
     }
 }
