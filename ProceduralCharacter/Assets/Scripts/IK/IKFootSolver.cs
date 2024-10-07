@@ -11,13 +11,18 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float stepDistance = 1f;
     [SerializeField] float stepLength = 1f;
     [SerializeField] float stepHeight = 1f;
+    [SerializeField] float footHeightOffset = 0.1f;
+    [SerializeField] float footForwardOffset = 0.2f;
     [SerializeField] Vector3 footOffset;
     [SerializeField] IKFootSolver otherFoot;
+    [SerializeField] Transform toeBase;
+    //[SerializeField] Transform toeEnd;
     //foot side offset from the center of the body
     float footSpacing;
     float sphereCastRadius = 0.1f;
     Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
+    Vector3 kneeHeight;
     float lerp;
     RaycastHit hit;
     // Start is called before the first frame update
@@ -26,47 +31,36 @@ public class IKFootSolver : MonoBehaviour
         footSpacing = transform.localPosition.x;
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = transform.up;
+        kneeHeight = new Vector3(0f, 1f, 0f);
         lerp = 1f;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //FindHit();
-        //if (ShouldMove())
-        //{
-        //    lerp = 0f;
-        //    if (HitFound())
-        //    {
-        //        transform.position = hit.point;
-        //    }
-        //    //newPosition = hit.point;
-        //    //oldPosition = currentPosition;
-        //}
-        transform.position = currentPosition;
-        transform.up = currentNormal;
-
-        Ray ray = new Ray(body.position + (body.right * footSpacing), Vector3.down);
-
-        if (Physics.Raycast(ray, out RaycastHit info, 10, terrainLayer.value))
+        transform.position = currentPosition + currentNormal * footHeightOffset;
+        //transform.up = currentNormal;
+        //because orientation of bones is weird - it's z is pointing up
+        //SINCE IT'S FORWARD ISN'T DIRECTLY LOOKING UP, THERE SHOULD BE SOME TWEAKS - ROTATE IT'S FORWARD FOR THE ANGLE
+        //BETWEEN NEW AND OLD NORMAL
+        Quaternion footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
+        toeBase.rotation = footRotation * toeBase.rotation;
+        FindHit();
+        if (HitFound())
         {
-            if (Vector3.Distance(newPosition, info.point) > stepDistance && !otherFoot.IsMoving() && lerp >= 1)
+            if (ShouldMove())
             {
-                lerp = 0;
-                int direction = body.InverseTransformPoint(info.point).z > body.InverseTransformPoint(newPosition).z ? 1 : -1;
-                newPosition = info.point + (body.forward * stepLength * direction) + footOffset;
-                newNormal = info.normal;
+                lerp = 0f;
+                newPosition = hit.point;
+                newNormal = hit.normal;
             }
+            //newPosition = hit.point;
+            //oldPosition = currentPosition;
         }
-
-        if (lerp < 1)
+        if (lerp < 1f)
         {
-            Vector3 tempPosition = Vector3.Lerp(oldPosition, newPosition, lerp);
-            tempPosition.y += Mathf.Sin(lerp * Mathf.PI) * stepHeight;
-
-            currentPosition = tempPosition;
-            currentNormal = Vector3.Lerp(oldNormal, newNormal, lerp);
-            lerp += Time.deltaTime * speed;
+            AnimateStep();
+            lerp += speed * Time.deltaTime;
         }
         else
         {
@@ -75,10 +69,19 @@ public class IKFootSolver : MonoBehaviour
         }
     }
     
+    private void AnimateStep()
+    {
+        Vector3 tempPosition = Vector3.Lerp(oldPosition, newPosition, lerp);
+        tempPosition.y += Mathf.Sin(lerp * Mathf.PI) * stepHeight;
+
+        currentPosition = tempPosition;
+        currentNormal = Vector3.Lerp(oldNormal, newNormal, lerp);
+        lerp += Time.deltaTime * speed;
+    }
     private void FindHit()
     {
-        RaycastHit hit;
-        Physics.SphereCast(body.position + (body.right * footSpacing) + new Vector3(0f, 0.5f, 0f), sphereCastRadius, Vector3.down, out hit, 1f, terrainLayer.value);
+        //RaycastHit hit;
+        Physics.SphereCast(body.position + (body.right * footSpacing) + kneeHeight, sphereCastRadius, Vector3.down, out hit, 1.5f, terrainLayer.value);
     }
 
     private bool ShouldMove()
