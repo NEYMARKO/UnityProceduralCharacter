@@ -60,7 +60,7 @@ public class ProceduralMovement : MonoBehaviour
         return transform.forward;
     }
     
-    private bool CharacterMoving()
+    public bool CharacterMoving()
     {
         return (movementAction.ReadValue<Vector2>() != Vector2.zero);
     }
@@ -68,6 +68,11 @@ public class ProceduralMovement : MonoBehaviour
     private void AnimateRotation(Quaternion startRotation, Quaternion endRotation)
     {
         transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
+    }
+
+    public float GetMovementSpeed()
+    {
+        return movementSpeed;
     }
 
     private void OnEnable()

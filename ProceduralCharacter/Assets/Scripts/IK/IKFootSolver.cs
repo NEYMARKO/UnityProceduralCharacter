@@ -6,7 +6,7 @@ using UnityEngineInternal;
 public class IKFootSolver : MonoBehaviour
 {
     [SerializeField] LayerMask terrainLayer;
-    [SerializeField] Transform body;
+    [SerializeField] ProceduralMovement proceduralMovement;
     [SerializeField] float speed = 1f;
     [SerializeField] float stepDistance = 1f;
     [SerializeField] float stepLength = 1f;
@@ -23,8 +23,10 @@ public class IKFootSolver : MonoBehaviour
     Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
     Vector3 kneeHeight;
+    Transform body;
     float lerp;
     RaycastHit hit;
+    Quaternion oldToeRotation;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,36 +34,47 @@ public class IKFootSolver : MonoBehaviour
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = transform.up;
         kneeHeight = new Vector3(0f, 0.5f, 0f);
+        body = proceduralMovement.transform;
+        oldToeRotation = toeBase.rotation;
         lerp = 1f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        //if (!proceduralMovement.CharacterMoving())
+        //{
+        //    lerp = 1f;
+        //    FindHit(body.position + (body.right * footSpacing) + kneeHeight);
+        //    currentPosition = hit.point;
+        //    currentNormal = hit.normal;
+        //}
         transform.position = currentPosition + currentNormal * footHeightOffset;
         //transform.up = currentNormal;
         //because orientation of bones is weird - it's z is pointing up
         //SINCE IT'S FORWARD ISN'T DIRECTLY LOOKING UP, THERE SHOULD BE SOME TWEAKS - ROTATE IT'S FORWARD FOR THE ANGLE
         //BETWEEN NEW AND OLD NORMAL
         Quaternion footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
-        toeBase.rotation = footRotation * toeBase.rotation;
+        toeBase.up = oldToeRotation * currentNormal;
         FindHit(body.position + (body.right * footSpacing) + kneeHeight);
         if (HitFound())
         {
             if (ShouldMove())
             {
                 lerp = 0f;
-                FindHit(hit.point + kneeHeight + (speed * stepLength/2) * body.forward);
+                FindHit(hit.point + kneeHeight + (proceduralMovement.GetMovementSpeed() / speed + stepLength) * body.forward);
                 newPosition = hit.point;
                 newNormal = hit.normal;
+                oldToeRotation = toeBase.rotation;
             }
             //newPosition = hit.point;
             //oldPosition = currentPosition;
         }
         if (lerp < 1f)
         {
+            //if (proceduralMovement.CharacterMoving()) AnimateStep();
             AnimateStep();
-            lerp += speed * Time.deltaTime;
+            //lerp += speed * Time.deltaTime;
         }
         else
         {
@@ -87,7 +100,7 @@ public class IKFootSolver : MonoBehaviour
 
     private bool ShouldMove()
     {
-        return (Vector3.Distance(hit.point, currentPosition) >= stepDistance) && !otherFoot.IsMoving() && lerp >= 1f;
+        return (Vector3.Distance(hit.point, currentPosition) > stepDistance) && !otherFoot.IsMoving() && lerp >= 1f;
     }
     
     private bool HitFound()
