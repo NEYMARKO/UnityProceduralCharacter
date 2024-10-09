@@ -12,8 +12,8 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float stepLength = 1f;
     [SerializeField] float stepHeight = 1f;
     [SerializeField] float footHeightOffset = 0.1f;
-    [SerializeField] float footForwardOffset = 0.2f;
-    [SerializeField] Vector3 footOffset;
+    //[SerializeField] float footForwardOffset = 0.2f;
+    //[SerializeField] Vector3 footOffset;
     [SerializeField] IKFootSolver otherFoot;
     [SerializeField] Transform toeBase;
     //[SerializeField] Transform toeEnd;
@@ -31,7 +31,7 @@ public class IKFootSolver : MonoBehaviour
         footSpacing = transform.localPosition.x;
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = transform.up;
-        kneeHeight = new Vector3(0f, 1f, 0f);
+        kneeHeight = new Vector3(0f, 0.5f, 0f);
         lerp = 1f;
     }
 
@@ -45,12 +45,13 @@ public class IKFootSolver : MonoBehaviour
         //BETWEEN NEW AND OLD NORMAL
         Quaternion footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
         toeBase.rotation = footRotation * toeBase.rotation;
-        FindHit();
+        FindHit(body.position + (body.right * footSpacing) + kneeHeight);
         if (HitFound())
         {
             if (ShouldMove())
             {
                 lerp = 0f;
+                FindHit(hit.point + kneeHeight + (speed * stepLength/2) * body.forward);
                 newPosition = hit.point;
                 newNormal = hit.normal;
             }
@@ -78,10 +79,10 @@ public class IKFootSolver : MonoBehaviour
         currentNormal = Vector3.Lerp(oldNormal, newNormal, lerp);
         lerp += Time.deltaTime * speed;
     }
-    private void FindHit()
+    private void FindHit(Vector3 rayOrigin)
     {
         //RaycastHit hit;
-        Physics.SphereCast(body.position + (body.right * footSpacing) + kneeHeight, sphereCastRadius, Vector3.down, out hit, 1.5f, terrainLayer.value);
+        Physics.SphereCast(rayOrigin, sphereCastRadius, Vector3.down, out hit, 1.5f, terrainLayer.value);
     }
 
     private bool ShouldMove()
