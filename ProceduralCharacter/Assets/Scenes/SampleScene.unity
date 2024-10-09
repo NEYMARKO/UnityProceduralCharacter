@@ -15501,9 +15501,9 @@ MonoBehaviour:
     m_Bits: 2048
   proceduralMovement: {fileID: 1365442991}
   speed: 2
-  stepDistance: 0.7
-  stepLength: 0.35
-  stepHeight: 0.35
+  stepDistance: 0.6
+  stepLength: 0.5
+  stepHeight: 0.2
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   toeBase: {fileID: 2126376450}
@@ -18369,7 +18369,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  movementSpeed: 2.5
+  movementSpeed: 1.5
   rotationSpeed: 750
   _camera: {fileID: 1326437394}
 --- !u!4 &1365442992 stripped
@@ -26167,9 +26167,9 @@ MonoBehaviour:
     m_Bits: 2048
   proceduralMovement: {fileID: 1365442991}
   speed: 2
-  stepDistance: 0.7
-  stepLength: 0.35
-  stepHeight: 0.35
+  stepDistance: 0.6
+  stepLength: 0.5
+  stepHeight: 0.2
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   toeBase: {fileID: 2126376450}
@@ -26393,7 +26393,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2653452419109400907, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.34
+      value: -0.45
       objectReference: {fileID: 0}
     - target: {fileID: 3902705428090197278, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_Data.m_SourceObjects.m_Length
@@ -26408,8 +26408,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1636598104}
     - target: {fileID: 4723310668662044113, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.0912447
+      objectReference: {fileID: 0}
+    - target: {fileID: 4723310668662044113, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.29
+      value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 5520921824700797777, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_Name
