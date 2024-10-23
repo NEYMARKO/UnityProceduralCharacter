@@ -23,7 +23,10 @@ public class ProceduralMovement : MonoBehaviour
     [Header("Camera")]
     [SerializeField] CameraMovement _camera;
 
-    float hipsHeight = 1f;
+    bool movementStopped = true;
+    bool startedMoving = false;
+
+    //float hipsHeight = 1f;
    
     private void Awake()
     {
@@ -33,13 +36,14 @@ public class ProceduralMovement : MonoBehaviour
     void Update()
     {
         Move();
+        ToggleStandingStill();
         AnimateRotation(transform.rotation, targetRotation);
     }
 
     void Move()
     {
         movementDirection = movementAction.ReadValue<Vector2>();
-        if (CharacterMoving())
+        if (DetectedMovementInput())
         { 
             transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
         }
@@ -60,7 +64,7 @@ public class ProceduralMovement : MonoBehaviour
         return transform.forward;
     }
     
-    public bool CharacterMoving()
+    public bool DetectedMovementInput()
     {
         return (movementAction.ReadValue<Vector2>() != Vector2.zero);
     }
@@ -70,11 +74,56 @@ public class ProceduralMovement : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
     }
 
+    private void ToggleStandingStill()
+    {
+        switch(DetectedMovementInput())
+        {
+            case true:
+                if (movementStopped) startedMoving = true;
+                movementStopped = false;
+                break;
+            case false:
+                movementStopped = true;
+                startedMoving = false;
+                break;
+            default:
+
+        }
+        //if (standingStill && DetectedMovementInput())
+        //{
+        //    standingStill = false;
+        //    startedMoving = true;
+        //}
+        //else
+        //{
+        //    standingStill = true;
+        //    startedMoving = false;
+        //}
+    }
     public float GetMovementSpeed()
     {
         return movementSpeed;
     }
 
+    public float GetMovementMagnitude()
+    {
+        return movementDirection.magnitude;
+    }
+
+    public float GetScaledMovementSpeed()
+    {
+        return movementSpeed * movementDirection.magnitude;
+    }
+
+    public bool PlayerMoving()
+    {
+        return movementStopped;
+    }
+
+    public bool MovementStarted()
+    {
+        return movementStopped;
+    }
     private void OnEnable()
     {
         movementAction.Enable();

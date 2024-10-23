@@ -15500,6 +15500,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   proceduralMovement: {fileID: 1365442991}
+  startingLeg: 1
   speed: 2
   stepDistance: 0.6
   stepLength: 0.5
@@ -15507,6 +15508,7 @@ MonoBehaviour:
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   toeBase: {fileID: 2126376450}
+  kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &928036040
 Mesh:
   m_ObjectHideFlags: 0
@@ -26166,6 +26168,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   proceduralMovement: {fileID: 1365442991}
+  startingLeg: 0
   speed: 2
   stepDistance: 0.6
   stepLength: 0.5
@@ -26173,6 +26176,7 @@ MonoBehaviour:
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   toeBase: {fileID: 2126376450}
+  kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &2085364763
 Mesh:
   m_ObjectHideFlags: 0
@@ -26353,7 +26357,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.24
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -26393,7 +26397,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2653452419109400907, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.45
+      value: -0.026300829
+      objectReference: {fileID: 0}
+    - target: {fileID: 3649423283181208164, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3902705428090197278, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_Data.m_SourceObjects.m_Length
@@ -26409,11 +26417,11 @@ PrefabInstance:
       objectReference: {fileID: 1636598104}
     - target: {fileID: 4723310668662044113, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.0912447
+      value: -0.09124454
       objectReference: {fileID: 0}
     - target: {fileID: 4723310668662044113, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.45
+      value: -0.02630056
       objectReference: {fileID: 0}
     - target: {fileID: 5520921824700797777, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_Name
