@@ -17,6 +17,8 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float footHeightOffset = 0.1f;
     [SerializeField] IKFootSolver otherFoot;
     [SerializeField] Transform toeBase;
+    //[SerializeField] Transform foot;
+    [SerializeField] float footOffsetTolerance;
     //foot side offset from the center of the body
     float footSpacing;
     float sphereCastRadius = 0.1f;
@@ -28,7 +30,6 @@ public class IKFootSolver : MonoBehaviour
     RaycastHit hit, bodyAlignedHit;
     Quaternion oldToeRotation;
     
-    // Start is called before the first frame update
     void Start()
     {
         footSpacing = transform.localPosition.x;
@@ -42,12 +43,8 @@ public class IKFootSolver : MonoBehaviour
         body.position += body.forward * stepLength / 2;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //Only if target has been reached can it move again
-        if (kneeHeight == Vector3.zero) return;
-
         transform.position = currentPosition + currentNormal * footHeightOffset;
         //transform.up = currentNormal;
         //because orientation of bones is weird - it's z is pointing up
@@ -87,6 +84,10 @@ public class IKFootSolver : MonoBehaviour
         currentPosition = tempPosition;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
         animationCompleted += Time.deltaTime * speed;
+        if (animationCompleted >= 1f && Vector3.Distance(toeBase.position, currentPosition) <= footOffsetTolerance)
+        {
+            animationCompleted = 0.99f;
+        }
     }
     private void FindHit(Vector3 rayOrigin)
     {
@@ -100,7 +101,9 @@ public class IKFootSolver : MonoBehaviour
     }
     private bool ShouldMove()
     {
-        return (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance) && !otherFoot.IsMoving() && animationCompleted >= 1f && proceduralMovement.DetectedMovementInput();
+        return (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance) &&
+            !otherFoot.IsMoving() && animationCompleted >= 1f &&
+            proceduralMovement.DetectedMovementInput();
     }
     
     private bool HitFound()
@@ -110,7 +113,7 @@ public class IKFootSolver : MonoBehaviour
 
     public bool IsMoving()
     {
-        return animationCompleted < 1;
+        return animationCompleted < 1 && Vector3.Distance(transform.position, toeBase.position) >= footOffsetTolerance;
     }
 
     private Vector3 GetStationaryFootRayCastPosition()
@@ -120,7 +123,7 @@ public class IKFootSolver : MonoBehaviour
 
     private Vector3 GetMovingFootRayCastPosition()
     {
-        return GetStationaryFootRayCastPosition() + (proceduralMovement.GetScaledMovementSpeed() / speed + stepLength) * body.forward;
+        return GetStationaryFootRayCastPosition() + (proceduralMovement.GetMovementSpeed()/speed + stepLength) * body.forward;
     }
     private bool BodyStopped()
     {
@@ -129,7 +132,11 @@ public class IKFootSolver : MonoBehaviour
     
     private void OnDrawGizmos()
     {
-
+        if (Vector3.Distance(bodyAlignedHit.point, hit.point) >= stepDistance)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(bodyAlignedHit.point, hit.point);
+        }
         Gizmos.color = Color.red;
         Gizmos.DrawSphere(newPosition, 0.1f);
         Gizmos.color = Color.blue;

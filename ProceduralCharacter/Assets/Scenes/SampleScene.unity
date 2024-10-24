@@ -15506,8 +15506,9 @@ MonoBehaviour:
   stepLength: 0.5
   stepHeight: 0.2
   footHeightOffset: 0.1
-  otherFoot: {fileID: 899420989}
-  toeBase: {fileID: 2126376450}
+  otherFoot: {fileID: 2051067454}
+  toeBase: {fileID: 1071664311}
+  footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &928036040
 Mesh:
@@ -15705,6 +15706,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1365442992}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1071664311 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6573802787548822354, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
+  m_PrefabInstance: {fileID: 2852345032370241840}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1170900181
 GameObject:
   m_ObjectHideFlags: 0
@@ -26176,6 +26182,7 @@ MonoBehaviour:
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   toeBase: {fileID: 2126376450}
+  footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &2085364763
 Mesh:
