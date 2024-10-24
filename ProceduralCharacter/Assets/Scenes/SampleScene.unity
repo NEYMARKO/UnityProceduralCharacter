@@ -15503,11 +15503,11 @@ MonoBehaviour:
   startingLeg: 1
   speed: 2
   stepDistance: 0.6
-  stepLength: 0.5
+  stepLength: 0.3
   stepHeight: 0.2
   footHeightOffset: 0.1
   otherFoot: {fileID: 2051067454}
-  toeBase: {fileID: 1071664311}
+  footTransform: {fileID: 1071664311}
   footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &928036040
@@ -26177,11 +26177,11 @@ MonoBehaviour:
   startingLeg: 0
   speed: 2
   stepDistance: 0.6
-  stepLength: 0.5
+  stepLength: 0.3
   stepHeight: 0.2
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
-  toeBase: {fileID: 2126376450}
+  footTransform: {fileID: 2126376450}
   footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &2085364763

@@ -16,7 +16,7 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float stepHeight = 1f;
     [SerializeField] float footHeightOffset = 0.1f;
     [SerializeField] IKFootSolver otherFoot;
-    [SerializeField] Transform toeBase;
+    [SerializeField] Transform footTransform;
     //[SerializeField] Transform foot;
     [SerializeField] float footOffsetTolerance;
     //foot side offset from the center of the body
@@ -27,6 +27,7 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] Vector3 kneeHeight;
     Transform body;
     float animationCompleted;
+    bool previouslyMoved = false;
     RaycastHit hit, bodyAlignedHit;
     Quaternion oldToeRotation;
     
@@ -35,9 +36,10 @@ public class IKFootSolver : MonoBehaviour
         footSpacing = transform.localPosition.x;
         //kneeHeight = new Vector3(0f, 0.5f, 0f);
         body = proceduralMovement.transform;
-        oldToeRotation = toeBase.rotation;
+        oldToeRotation = footTransform.rotation;
         animationCompleted = 1f;
         if (startingLeg) transform.position = body.position + body.right * footSpacing + body.forward * stepLength * 2;
+        else previouslyMoved = true;
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = transform.up;
         body.position += body.forward * stepLength / 2;
@@ -51,7 +53,7 @@ public class IKFootSolver : MonoBehaviour
         //SINCE IT'S FORWARD ISN'T DIRECTLY LOOKING UP, THERE SHOULD BE SOME TWEAKS - ROTATE IT'S FORWARD FOR THE ANGLE
         //BETWEEN NEW AND OLD NORMAL
         Quaternion footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
-        toeBase.up = oldToeRotation * currentNormal;
+        footTransform.up = oldToeRotation * currentNormal;
         UpdateBodyAlignedHit();
         if (ShouldMove())
         {
@@ -59,7 +61,8 @@ public class IKFootSolver : MonoBehaviour
             FindHit(GetMovingFootRayCastPosition());
             newPosition = hit.point;
             newNormal = hit.normal;
-            oldToeRotation = toeBase.rotation;
+            oldToeRotation = footTransform.rotation;
+            previouslyMoved = true;
         }
         //newPosition = hit.point;
         //oldPosition = currentPosition;
@@ -71,6 +74,7 @@ public class IKFootSolver : MonoBehaviour
         }
         else
         {
+            otherFoot.previouslyMoved = false;
             oldPosition = newPosition;
             oldNormal = newNormal;
         }
@@ -84,10 +88,10 @@ public class IKFootSolver : MonoBehaviour
         currentPosition = tempPosition;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
         animationCompleted += Time.deltaTime * speed;
-        if (animationCompleted >= 1f && Vector3.Distance(toeBase.position, currentPosition) <= footOffsetTolerance)
-        {
-            animationCompleted = 0.99f;
-        }
+        //if (animationCompleted >= 1f && Vector3.Distance(footTransform.position, currentPosition) <= footOffsetTolerance)
+        //{
+        //    animationCompleted = 0.99f;
+        //}
     }
     private void FindHit(Vector3 rayOrigin)
     {
@@ -101,9 +105,9 @@ public class IKFootSolver : MonoBehaviour
     }
     private bool ShouldMove()
     {
-        return (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance) &&
-            !otherFoot.IsMoving() && animationCompleted >= 1f &&
-            proceduralMovement.DetectedMovementInput();
+        return proceduralMovement.DetectedMovementInput() &&
+            !otherFoot.IsMoving() && animationCompleted >= 1f && !previouslyMoved &&
+            (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance);
     }
     
     private bool HitFound()
@@ -113,7 +117,7 @@ public class IKFootSolver : MonoBehaviour
 
     public bool IsMoving()
     {
-        return animationCompleted < 1 && Vector3.Distance(transform.position, toeBase.position) >= footOffsetTolerance;
+        return animationCompleted < 1;
     }
 
     private Vector3 GetStationaryFootRayCastPosition()
