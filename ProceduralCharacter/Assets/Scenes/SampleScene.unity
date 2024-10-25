@@ -15508,6 +15508,7 @@ MonoBehaviour:
   footHeightOffset: 0.1
   otherFoot: {fileID: 2051067454}
   footTransform: {fileID: 1071664311}
+  hipsHeight: 1
   footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &928036040
@@ -26182,6 +26183,7 @@ MonoBehaviour:
   footHeightOffset: 0.1
   otherFoot: {fileID: 899420989}
   footTransform: {fileID: 2126376450}
+  hipsHeight: 1
   footOffsetTolerance: 0
   kneeHeight: {x: 0, y: 1, z: 0}
 --- !u!43 &2085364763
@@ -26364,7 +26366,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.24
+      value: 2.587
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.y

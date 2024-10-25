@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using Unity.VisualScripting.ReorderableList;
+using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEditor.PlayerSettings.Switch;
@@ -23,28 +24,37 @@ public class ProceduralMovement : MonoBehaviour
     [Header("Camera")]
     [SerializeField] CameraMovement _camera;
 
-    bool movementStopped = true;
-    bool startedMoving = false;
+    [Header("Hips")]
+    [SerializeField] float hipsHeight;
+    [Header("Legs")]
+    [SerializeField] IKFootSolver leftLeg;
+    [SerializeField] IKFootSolver rightLeg;
+    float lerp = 0f;
+    bool shouldAnimateHipsLifting = true;
+    Vector3 oldHipsPos, currentHipsPos, newHipsPos;
 
-    //float hipsHeight = 1f;
-   
     private void Awake()
     {
         playerInput = new PlayerInput();
         movementAction = playerInput.Player.Move;
     }
+
+    private void Start()
+    {
+        oldHipsPos = currentHipsPos = newHipsPos = transform.position;
+    }
     void Update()
     {
         Move();
-        ToggleStandingStill();
         AnimateRotation(transform.rotation, targetRotation);
+        ModifyHipsHeight(leftLeg.GetTargetHeight(), rightLeg.GetTargetHeight());
     }
 
     void Move()
     {
         movementDirection = movementAction.ReadValue<Vector2>();
         if (DetectedMovementInput())
-        { 
+        {
             transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
         }
     }
@@ -63,7 +73,7 @@ public class ProceduralMovement : MonoBehaviour
         RotateCharacter(thumbstickAngle);
         return transform.forward;
     }
-    
+
     public bool DetectedMovementInput()
     {
         return (movementAction.ReadValue<Vector2>() != Vector2.zero);
@@ -74,31 +84,19 @@ public class ProceduralMovement : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(startRotation, endRotation, rotationSpeed * Time.deltaTime);
     }
 
-    private void ToggleStandingStill()
+    private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
-        switch(DetectedMovementInput())
-        {
-            case true:
-                if (movementStopped) startedMoving = true;
-                movementStopped = false;
-                break;
-            case false:
-                movementStopped = true;
-                startedMoving = false;
-                break;
-            default:
-
-        }
-        //if (standingStill && DetectedMovementInput())
-        //{
-        //    standingStill = false;
-        //    startedMoving = true;
-        //}
-        //else
-        //{
-        //    standingStill = true;
-        //    startedMoving = false;
-        //}
+        if (leg1Height == float.MinValue || leg2Height == float.MinValue) return;
+        Vector3 newHipsPos = transform.position;
+        //newHipsPos.y = (leg1Height + leg2Height) / 2;
+        newHipsPos.y = Mathf.Min(leg1Height, leg2Height);
+        transform.position = newHipsPos;
+    }
+    private void AnimateHipsLifting()
+    {
+        //currentHipsPos = transform.position;
+        Vector3 tempPosition = Vector3.Lerp(oldHipsPos, newHipsPos, lerp);
+        currentHipsPos = tempPosition;
     }
     public float GetMovementSpeed()
     {
@@ -115,15 +113,6 @@ public class ProceduralMovement : MonoBehaviour
         return movementSpeed * movementDirection.magnitude;
     }
 
-    public bool PlayerMoving()
-    {
-        return movementStopped;
-    }
-
-    public bool MovementStarted()
-    {
-        return movementStopped;
-    }
     private void OnEnable()
     {
         movementAction.Enable();

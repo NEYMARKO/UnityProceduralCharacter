@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security;
 using TreeEditor;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngineInternal;
 
@@ -34,7 +35,7 @@ public class IKFootSolver : MonoBehaviour
     void Start()
     {
         footSpacing = transform.localPosition.x;
-        //kneeHeight = new Vector3(0f, 0.5f, 0f);
+        //kneeHeight.y = hipsHeight / 2;
         body = proceduralMovement.transform;
         oldToeRotation = footTransform.rotation;
         animationCompleted = 1f;
@@ -64,13 +65,10 @@ public class IKFootSolver : MonoBehaviour
             oldToeRotation = footTransform.rotation;
             previouslyMoved = true;
         }
-        //newPosition = hit.point;
-        //oldPosition = currentPosition;
         if (animationCompleted < 1f)
         {
-            //if (proceduralMovement.CharacterMoving()) AnimateStep();
             AnimateStep();
-            //lerp += speed * Time.deltaTime;
+            animationCompleted += Time.deltaTime * speed;
         }
         else
         {
@@ -87,11 +85,6 @@ public class IKFootSolver : MonoBehaviour
 
         currentPosition = tempPosition;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
-        animationCompleted += Time.deltaTime * speed;
-        //if (animationCompleted >= 1f && Vector3.Distance(footTransform.position, currentPosition) <= footOffsetTolerance)
-        //{
-        //    animationCompleted = 0.99f;
-        //}
     }
     private void FindHit(Vector3 rayOrigin)
     {
@@ -109,11 +102,6 @@ public class IKFootSolver : MonoBehaviour
             !otherFoot.IsMoving() && animationCompleted >= 1f && !previouslyMoved &&
             (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance);
     }
-    
-    private bool HitFound()
-    {
-        return hit.point != Vector3.zero;
-    }
 
     public bool IsMoving()
     {
@@ -129,11 +117,12 @@ public class IKFootSolver : MonoBehaviour
     {
         return GetStationaryFootRayCastPosition() + (proceduralMovement.GetMovementSpeed()/speed + stepLength) * body.forward;
     }
-    private bool BodyStopped()
-    {
-        return !proceduralMovement.DetectedMovementInput();
-    }
     
+    public float GetTargetHeight()
+    {
+        //if (IsMoving()) return float.MinValue;
+        return newPosition.y;
+    }
     private void OnDrawGizmos()
     {
         if (Vector3.Distance(bodyAlignedHit.point, hit.point) >= stepDistance)
