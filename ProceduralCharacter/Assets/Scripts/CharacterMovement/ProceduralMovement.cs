@@ -26,6 +26,7 @@ public class ProceduralMovement : MonoBehaviour
 
     [Header("Hips")]
     [SerializeField] float hipsHeight;
+    [SerializeField] float hipsAnimationSpeed;
     [Header("Legs")]
     [SerializeField] IKFootSolver leftLeg;
     [SerializeField] IKFootSolver rightLeg;
@@ -48,6 +49,23 @@ public class ProceduralMovement : MonoBehaviour
         Move();
         AnimateRotation(transform.rotation, targetRotation);
         ModifyHipsHeight(leftLeg.GetTargetHeight(), rightLeg.GetTargetHeight());
+        Vector3 temp = transform.position;
+        temp.y = currentHipsPos.y;
+        transform.position = temp;
+        Debug.Log($"OLD: {oldHipsPos}, CURRENT: {currentHipsPos}, NEW: {newHipsPos}");
+        if (newHipsPos.y == oldHipsPos.y)
+        {
+            lerp = 0f;
+        }
+        if (lerp < 1)
+        {
+            AnimateHipsHeightChange();
+            lerp += hipsAnimationSpeed * Time.deltaTime;
+        }
+        else
+        {
+            oldHipsPos = newHipsPos;
+        }
     }
 
     void Move()
@@ -55,7 +73,8 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();
         if (DetectedMovementInput())
         {
-            transform.position += GetForwardDirection() * movementSpeed * Time.deltaTime;
+            UpdateForwardDirection();
+            transform.position += transform.forward * movementSpeed * Time.deltaTime;
         }
     }
 
@@ -66,12 +85,11 @@ public class ProceduralMovement : MonoBehaviour
         Quaternion thumbstickRotation = Quaternion.Euler(0, rotationAngle, 0).normalized;
         targetRotation = _camera.GetCameraYRotation() * thumbstickRotation;
     }
-    private Vector3 GetForwardDirection()
+    private void UpdateForwardDirection()
     {
         // angle of thumbstick during input
         thumbstickAngle = Mathf.Atan2(movementDirection.x, movementDirection.y) * Mathf.Rad2Deg;
         RotateCharacter(thumbstickAngle);
-        return transform.forward;
     }
 
     public bool DetectedMovementInput()
@@ -87,12 +105,12 @@ public class ProceduralMovement : MonoBehaviour
     private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
         if (leg1Height == float.MinValue || leg2Height == float.MinValue) return;
-        Vector3 newHipsPos = transform.position;
+        newHipsPos = transform.position;
         //newHipsPos.y = (leg1Height + leg2Height) / 2;
         newHipsPos.y = Mathf.Min(leg1Height, leg2Height);
-        transform.position = newHipsPos;
+        //transform.position = newHipsPos;
     }
-    private void AnimateHipsLifting()
+    private void AnimateHipsHeightChange()
     {
         //currentHipsPos = transform.position;
         Vector3 tempPosition = Vector3.Lerp(oldHipsPos, newHipsPos, lerp);

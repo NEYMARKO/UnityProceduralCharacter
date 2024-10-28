@@ -75,6 +75,9 @@ public class IKFootSolver : MonoBehaviour
             otherFoot.previouslyMoved = false;
             oldPosition = newPosition;
             oldNormal = newNormal;
+            //Quaternion footRotator = Quaternion.FromToRotation(transform.forward, newNormal);
+
+            //transform.forward = oldToeRotation * newNormal;
         }
     }
     
@@ -102,7 +105,6 @@ public class IKFootSolver : MonoBehaviour
             !otherFoot.IsMoving() && animationCompleted >= 1f && !previouslyMoved &&
             (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance);
     }
-
     public bool IsMoving()
     {
         return animationCompleted < 1;
