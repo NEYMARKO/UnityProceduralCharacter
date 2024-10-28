@@ -31,7 +31,7 @@ public class ProceduralMovement : MonoBehaviour
     [SerializeField] IKFootSolver leftLeg;
     [SerializeField] IKFootSolver rightLeg;
     float lerp = 0f;
-    bool shouldAnimateHipsLifting = true;
+    bool hipsAnimating = false;
     Vector3 oldHipsPos, currentHipsPos, newHipsPos;
 
     private void Awake()
@@ -53,9 +53,10 @@ public class ProceduralMovement : MonoBehaviour
         temp.y = currentHipsPos.y;
         transform.position = temp;
         Debug.Log($"OLD: {oldHipsPos}, CURRENT: {currentHipsPos}, NEW: {newHipsPos}");
-        if (newHipsPos.y == oldHipsPos.y)
+        if (oldHipsPos.y != newHipsPos.y && !hipsAnimating)
         {
             lerp = 0f;
+            hipsAnimating = true;
         }
         if (lerp < 1)
         {
@@ -65,6 +66,7 @@ public class ProceduralMovement : MonoBehaviour
         else
         {
             oldHipsPos = newHipsPos;
+            hipsAnimating = false;
         }
     }
 
@@ -104,7 +106,7 @@ public class ProceduralMovement : MonoBehaviour
 
     private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
-        if (leg1Height == float.MinValue || leg2Height == float.MinValue) return;
+        if (hipsAnimating || leg1Height == float.MinValue || leg2Height == float.MinValue) return;
         newHipsPos = transform.position;
         //newHipsPos.y = (leg1Height + leg2Height) / 2;
         newHipsPos.y = Mathf.Min(leg1Height, leg2Height);
