@@ -15508,8 +15508,8 @@ MonoBehaviour:
   footHeightOffset: 0.05
   otherFoot: {fileID: 2051067454}
   footTransform: {fileID: 1071664311}
-  angleOffsetTolerance: 2.5
-  kneePosition: {x: 0, y: 1, z: 0}
+  angleOffsetTolerance: 1
+  kneePosition: {x: 0, y: 0.75, z: 0}
 --- !u!43 &928036040
 Mesh:
   m_ObjectHideFlags: 0
@@ -26186,8 +26186,8 @@ MonoBehaviour:
   footHeightOffset: 0.05
   otherFoot: {fileID: 899420989}
   footTransform: {fileID: 2126376450}
-  angleOffsetTolerance: 2.5
-  kneePosition: {x: 0, y: 1, z: 0}
+  angleOffsetTolerance: 1
+  kneePosition: {x: 0, y: 0.75, z: 0}
 --- !u!43 &2085364763
 Mesh:
   m_ObjectHideFlags: 0
