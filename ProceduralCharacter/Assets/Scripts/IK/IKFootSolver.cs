@@ -31,7 +31,7 @@ public class IKFootSolver : MonoBehaviour
     RaycastHit hit, bodyAlignedHit;
     Quaternion oldToeRotation;
     Quaternion lastPlayerRotation;
-    
+    Quaternion footRotation = Quaternion.identity;
     void Start()
     {
         footSpacing = transform.localPosition.x;
@@ -54,7 +54,6 @@ public class IKFootSolver : MonoBehaviour
         //because orientation of bones is weird - it's z is pointing up
         //SINCE IT'S FORWARD ISN'T DIRECTLY LOOKING UP, THERE SHOULD BE SOME TWEAKS - ROTATE IT'S FORWARD FOR THE ANGLE
         //BETWEEN NEW AND OLD NORMAL
-        Quaternion footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
         footTransform.up = oldToeRotation * currentNormal;
         UpdateBodyAlignedHit();
         if (ShouldMove())
@@ -63,8 +62,11 @@ public class IKFootSolver : MonoBehaviour
             FindHit(GetMovingFootRayCastPosition(stepLength));
             newPosition = hit.point;
             newNormal = hit.normal;
-            oldToeRotation = footTransform.rotation;
+            //oldToeRotation = footTransform.rotation;
             previouslyMoved = true;
+            Debug.Log($"OLD NORMAL: {oldNormal} NEW NORMAL: {newNormal}");
+            if (oldNormal != newNormal) footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
+
         }
         if (animationCompleted < 1f)
         {
@@ -78,6 +80,10 @@ public class IKFootSolver : MonoBehaviour
         }
         else
         {
+            if (oldNormal != newNormal)
+            {
+                transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
+            }
             otherFoot.previouslyMoved = false;
             oldPosition = newPosition;
             oldNormal = newNormal;
