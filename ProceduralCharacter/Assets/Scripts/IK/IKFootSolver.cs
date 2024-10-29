@@ -18,19 +18,19 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float footHeightOffset = 0.1f;
     [SerializeField] IKFootSolver otherFoot;
     [SerializeField] Transform footTransform;
-    //[SerializeField] Transform foot;
-    [SerializeField] float footOffsetTolerance;
+    [SerializeField] float angleOffsetTolerance;
     //foot side offset from the center of the body
     float footSpacing;
     float sphereCastRadius = 0.1f;
     Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
-    [SerializeField] Vector3 kneeHeight;
+    [SerializeField] Vector3 kneePosition;
     Transform body;
     float animationCompleted;
     bool previouslyMoved = false;
     RaycastHit hit, bodyAlignedHit;
     Quaternion oldToeRotation;
+    Quaternion lastPlayerRotation;
     
     void Start()
     {
@@ -44,6 +44,7 @@ public class IKFootSolver : MonoBehaviour
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = transform.up;
         body.position += body.forward * stepLength / 2;
+        lastPlayerRotation = proceduralMovement.GetPlayerRotation();
     }
 
     void Update()
@@ -59,7 +60,7 @@ public class IKFootSolver : MonoBehaviour
         if (ShouldMove())
         {
             animationCompleted = 0f;
-            FindHit(GetMovingFootRayCastPosition());
+            FindHit(GetMovingFootRayCastPosition(stepLength));
             newPosition = hit.point;
             newNormal = hit.normal;
             oldToeRotation = footTransform.rotation;
@@ -67,6 +68,11 @@ public class IKFootSolver : MonoBehaviour
         }
         if (animationCompleted < 1f)
         {
+            if (Quaternion.Angle(lastPlayerRotation, proceduralMovement.GetPlayerRotation()) >= angleOffsetTolerance)
+            {
+                lastPlayerRotation = proceduralMovement.GetPlayerRotation();
+                FindHit(GetMovingFootRayCastPosition(Vector3.Distance(currentPosition, newPosition)));
+            }
             AnimateStep();
             animationCompleted += Time.deltaTime * speed;
         }
@@ -112,12 +118,12 @@ public class IKFootSolver : MonoBehaviour
 
     private Vector3 GetStationaryFootRayCastPosition()
     {
-        return body.position + (body.right * footSpacing) + kneeHeight;
+        return body.position + (body.right * footSpacing) + kneePosition;
     }
 
-    private Vector3 GetMovingFootRayCastPosition()
+    private Vector3 GetMovingFootRayCastPosition(float distanceLeft)
     {
-        return GetStationaryFootRayCastPosition() + (proceduralMovement.GetMovementSpeed()/speed + stepLength) * body.forward;
+        return GetStationaryFootRayCastPosition() + (proceduralMovement.GetMovementSpeed()/speed + distanceLeft) * body.forward;
     }
     
     public float GetTargetHeight()

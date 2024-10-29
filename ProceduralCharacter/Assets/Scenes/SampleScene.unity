@@ -15508,8 +15508,8 @@ MonoBehaviour:
   footHeightOffset: 0.05
   otherFoot: {fileID: 2051067454}
   footTransform: {fileID: 1071664311}
-  footOffsetTolerance: 0
-  kneeHeight: {x: 0, y: 1, z: 0}
+  angleOffsetTolerance: 2.5
+  kneePosition: {x: 0, y: 1, z: 0}
 --- !u!43 &928036040
 Mesh:
   m_ObjectHideFlags: 0
@@ -18380,7 +18380,7 @@ MonoBehaviour:
   movementSpeed: 1.5
   rotationSpeed: 750
   _camera: {fileID: 1326437394}
-  hipsHeight: 0
+  hipsLoweredAmount: 0
   hipsAnimationSpeed: 2
   leftLeg: {fileID: 899420989}
   rightLeg: {fileID: 2051067454}
@@ -26186,8 +26186,8 @@ MonoBehaviour:
   footHeightOffset: 0.05
   otherFoot: {fileID: 899420989}
   footTransform: {fileID: 2126376450}
-  footOffsetTolerance: 0
-  kneeHeight: {x: 0, y: 1, z: 0}
+  angleOffsetTolerance: 2.5
+  kneePosition: {x: 0, y: 1, z: 0}
 --- !u!43 &2085364763
 Mesh:
   m_ObjectHideFlags: 0

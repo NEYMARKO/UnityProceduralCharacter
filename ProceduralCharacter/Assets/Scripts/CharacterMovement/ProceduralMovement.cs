@@ -25,7 +25,7 @@ public class ProceduralMovement : MonoBehaviour
     [SerializeField] CameraMovement _camera;
 
     [Header("Hips")]
-    [SerializeField] float hipsHeight;
+    [SerializeField] float hipsLoweredAmount;
     [SerializeField] float hipsAnimationSpeed;
     [Header("Legs")]
     [SerializeField] IKFootSolver leftLeg;
@@ -52,7 +52,6 @@ public class ProceduralMovement : MonoBehaviour
         Vector3 temp = transform.position;
         temp.y = currentHipsPos.y;
         transform.position = temp;
-        Debug.Log($"OLD: {oldHipsPos}, CURRENT: {currentHipsPos}, NEW: {newHipsPos}");
         if (oldHipsPos.y != newHipsPos.y && !hipsAnimating)
         {
             lerp = 0f;
@@ -109,7 +108,7 @@ public class ProceduralMovement : MonoBehaviour
         if (hipsAnimating || leg1Height == float.MinValue || leg2Height == float.MinValue) return;
         newHipsPos = transform.position;
         //newHipsPos.y = (leg1Height + leg2Height) / 2;
-        newHipsPos.y = Mathf.Min(leg1Height, leg2Height);
+        newHipsPos.y = Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
         //transform.position = newHipsPos;
     }
     private void AnimateHipsHeightChange()
@@ -133,6 +132,10 @@ public class ProceduralMovement : MonoBehaviour
         return movementSpeed * movementDirection.magnitude;
     }
 
+    public Quaternion GetPlayerRotation()
+    {
+        return transform.rotation;
+    }
     private void OnEnable()
     {
         movementAction.Enable();
