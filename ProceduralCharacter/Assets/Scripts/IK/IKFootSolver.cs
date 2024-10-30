@@ -31,7 +31,6 @@ public class IKFootSolver : MonoBehaviour
     RaycastHit hit, bodyAlignedHit;
     Quaternion oldToeRotation;
     Quaternion lastPlayerRotation;
-    Quaternion footRotation = Quaternion.identity;
     void Start()
     {
         footSpacing = transform.localPosition.x;
@@ -42,6 +41,7 @@ public class IKFootSolver : MonoBehaviour
         if (startingLeg) transform.position = body.position + body.right * footSpacing + body.forward * stepLength * 2;
         else previouslyMoved = true;
         currentPosition = oldPosition = newPosition = transform.position;
+        //currentPosition = oldPosition = newPosition = body.InverseTransformPoint(transform.position);
         currentNormal = oldNormal = newNormal = transform.up;
         body.position += body.forward * stepLength / 2;
         lastPlayerRotation = proceduralMovement.GetPlayerRotation();
@@ -49,32 +49,31 @@ public class IKFootSolver : MonoBehaviour
 
     void Update()
     {
-        transform.position = currentPosition + currentNormal * footHeightOffset;
-        //transform.up = currentNormal;
-        //because orientation of bones is weird - it's z is pointing up
-        //SINCE IT'S FORWARD ISN'T DIRECTLY LOOKING UP, THERE SHOULD BE SOME TWEAKS - ROTATE IT'S FORWARD FOR THE ANGLE
-        //BETWEEN NEW AND OLD NORMAL
-        footTransform.up = oldToeRotation * currentNormal;
+        transform.position = currentPosition + newNormal * footHeightOffset;
         UpdateBodyAlignedHit();
+        
         if (ShouldMove())
         {
             animationCompleted = 0f;
             FindHit(GetMovingFootRayCastPosition(stepLength));
             newPosition = hit.point;
+            //newPosition = body.InverseTransformPoint(hit.point);
             newNormal = hit.normal;
-            //oldToeRotation = footTransform.rotation;
             previouslyMoved = true;
-            Debug.Log($"OLD NORMAL: {oldNormal} NEW NORMAL: {newNormal}");
-            if (oldNormal != newNormal) footRotation = Quaternion.FromToRotation(oldNormal, newNormal);
-
         }
         if (animationCompleted < 1f)
         {
-            if (Quaternion.Angle(lastPlayerRotation, proceduralMovement.GetPlayerRotation()) >= angleOffsetTolerance)
-            {
-                lastPlayerRotation = proceduralMovement.GetPlayerRotation();
-                FindHit(GetMovingFootRayCastPosition(Vector3.Distance(currentPosition, newPosition)));
-            }
+            
+            //if (Quaternion.Angle(lastPlayerRotation, proceduralMovement.GetPlayerRotation()) >= angleOffsetTolerance)
+            //{
+            //    lastPlayerRotation = proceduralMovement.GetPlayerRotation();
+                
+            //    //FindHit(GetMovingFootRayCastPosition(stepLength * (1 - animationCompleted)));
+            //    //newPosition = hit.point;
+            //    //newNormal = hit.normal;
+            //    //oldPosition = currentPosition;
+            //    //oldNormal = currentNormal;
+            //}
             AnimateStep();
             animationCompleted += Time.deltaTime * speed;
         }
@@ -84,18 +83,19 @@ public class IKFootSolver : MonoBehaviour
             {
                 transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
             }
-            otherFoot.previouslyMoved = false;
+            // leg has been moved
+            if (oldPosition != newPosition) otherFoot.previouslyMoved = false;
             oldPosition = newPosition;
+            //oldPosition = body.InverseTransformPoint(newPosition);
             oldNormal = newNormal;
-            //Quaternion footRotator = Quaternion.FromToRotation(transform.forward, newNormal);
-
-            //transform.forward = oldToeRotation * newNormal;
         }
     }
     
     private void AnimateStep()
     {
         Vector3 tempPosition = Vector3.Lerp(oldPosition, newPosition, animationCompleted);
+
+        //tempPosition = body.TransformPoint(tempPosition);
         tempPosition.y += Mathf.Sin(animationCompleted * Mathf.PI) * stepHeight;
 
         currentPosition = tempPosition;
@@ -113,6 +113,7 @@ public class IKFootSolver : MonoBehaviour
     }
     private bool ShouldMove()
     {
+        Debug.Log($"{(startingLeg ? "RIGHT" : "LEFT")} LEG previouslyMoved: {previouslyMoved}");
         return proceduralMovement.DetectedMovementInput() &&
             !otherFoot.IsMoving() && animationCompleted >= 1f && !previouslyMoved &&
             (Vector3.Distance(bodyAlignedHit.point, currentPosition) > stepDistance);
@@ -131,6 +132,11 @@ public class IKFootSolver : MonoBehaviour
     {
         return GetStationaryFootRayCastPosition() + (proceduralMovement.GetMovementSpeed()/speed + distanceLeft) * body.forward;
     }
+
+    private Vector3 RotateAround(Vector3 objectPosition, Vector3 pivot, Quaternion rotation)
+    {
+        return rotation * (objectPosition - pivot) + pivot;
+    }
     
     public float GetTargetHeight()
     {
@@ -139,14 +145,24 @@ public class IKFootSolver : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        if (Vector3.Distance(bodyAlignedHit.point, hit.point) >= stepDistance)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(bodyAlignedHit.point, hit.point);
-        }
+        //if (Vector3.Distance(bodyAlignedHit.point, hit.point) >= stepDistance)
+        //{
+        //    Gizmos.color = Color.green;
+        //    Gizmos.DrawLine(bodyAlignedHit.point, hit.point);
+        //}
+
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(newPosition, 0.1f);
+        //Gizmos.DrawSphere(newPosition, 0.1f);
+
+        Gizmos.DrawCube(newPosition, new Vector3(sphereCastRadius, sphereCastRadius, sphereCastRadius));
+
         Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(bodyAlignedHit.point, 0.1f);
+        //Gizmos.DrawSphere(newPosition, 0.1f);
+
+        Gizmos.DrawCube(oldPosition, new Vector3(sphereCastRadius, sphereCastRadius, sphereCastRadius));
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(oldPosition, newPosition);
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawSphere(bodyAlignedHit.point, 0.1f);
     }
 }

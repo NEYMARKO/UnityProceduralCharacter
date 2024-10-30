@@ -15502,10 +15502,10 @@ MonoBehaviour:
   proceduralMovement: {fileID: 1365442991}
   startingLeg: 1
   speed: 2
-  stepDistance: 0.6
+  stepDistance: 0.5
   stepLength: 0.3
   stepHeight: 0.2
-  footHeightOffset: 0.05
+  footHeightOffset: 0.075
   otherFoot: {fileID: 2051067454}
   footTransform: {fileID: 1071664311}
   angleOffsetTolerance: 1
@@ -26319,10 +26319,10 @@ MonoBehaviour:
   proceduralMovement: {fileID: 1365442991}
   startingLeg: 0
   speed: 2
-  stepDistance: 0.6
+  stepDistance: 0.5
   stepLength: 0.3
   stepHeight: 0.2
-  footHeightOffset: 0.05
+  footHeightOffset: 0.075
   otherFoot: {fileID: 899420989}
   footTransform: {fileID: 2126376450}
   angleOffsetTolerance: 1
@@ -26507,7 +26507,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.07
+      value: -18.73
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -26515,7 +26515,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.02
+      value: -13.03
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalRotation.w
