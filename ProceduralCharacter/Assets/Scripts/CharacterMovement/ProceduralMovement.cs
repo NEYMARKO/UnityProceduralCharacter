@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -33,6 +34,8 @@ public class ProceduralMovement : MonoBehaviour
     float lerp = 0f;
     bool hipsAnimating = false;
     Vector3 oldHipsPos, currentHipsPos, newHipsPos;
+
+    public event Action OnMovementStopped;
 
     private void Awake()
     {
@@ -77,6 +80,7 @@ public class ProceduralMovement : MonoBehaviour
             UpdateForwardDirection();
             transform.position += transform.forward * movementSpeed * Time.deltaTime;
         }
+        else OnMovementStopped?.Invoke();
     }
 
     private void RotateCharacter(float rotationAngle)
@@ -105,17 +109,14 @@ public class ProceduralMovement : MonoBehaviour
 
     private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
-        if (hipsAnimating || leg1Height == float.MinValue || leg2Height == float.MinValue) return;
+        if (hipsAnimating) return;
         newHipsPos = transform.position;
-        //newHipsPos.y = (leg1Height + leg2Height) / 2;
         newHipsPos.y = Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
-        //transform.position = newHipsPos;
     }
     private void AnimateHipsHeightChange()
     {
         //currentHipsPos = transform.position;
-        Vector3 tempPosition = Vector3.Lerp(oldHipsPos, newHipsPos, lerp);
-        currentHipsPos = tempPosition;
+        currentHipsPos = Vector3.Lerp(oldHipsPos, newHipsPos, lerp);
     }
     public float GetMovementSpeed()
     {
