@@ -36,11 +36,11 @@ public class IKFootSolver : MonoBehaviour
     float animationCompleted;
     bool previouslyMoved = false;
     RaycastHit hit, bodyAlignedHit, recoveryHit;
-    Quaternion oldToeRotation, footRotator = Quaternion.identity;
+    Quaternion defaultToeRotation, footRotator = Quaternion.identity;
     Quaternion lastPlayerRotation;
     [Header("Recovery")]
     [SerializeField] float recoverySpeed;
-
+    Vector3 enteringForward;
     struct Plane
     {
         public Vector3 normal;
@@ -70,7 +70,8 @@ public class IKFootSolver : MonoBehaviour
         currentNormal = oldNormal = newNormal = transform.up;
         animationCompleted = 1f;
 
-        oldToeRotation = footTransform.rotation;
+        defaultToeRotation = footTransform.rotation;
+        footRotator = Quaternion.FromToRotation(Vector3.up, body.up) * Quaternion.FromToRotation(Vector3.forward, body.forward);
         lastPlayerRotation = proceduralMovement.GetPlayerRotation();
     }
 
@@ -85,6 +86,7 @@ public class IKFootSolver : MonoBehaviour
             previouslyMoved = true;
             animationCompleted = 0f;
             FindHit(GetMovingFootRayCastPosition(stepLength));
+            enteringForward = body.forward;
             newPosition = hit.point;
             newNormal = hit.normal;
             enteringBodyForward = body.forward;
@@ -108,7 +110,7 @@ public class IKFootSolver : MonoBehaviour
         {
             //OPTIMIZATION OPPURTUNUITY - NO NEED TO UPDATE IT EVERY TIME
             footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
-            transform.rotation = footRotator * oldToeRotation;
+            transform.rotation = footRotator * defaultToeRotation;
 
             ////if body has changed it's forward vector (for example if you are heading up the slope, your feet will get
             ////rotated in some way, but if you are coming down that slope again, you would want them to be rotated differently
@@ -138,6 +140,7 @@ public class IKFootSolver : MonoBehaviour
     {
         currentPosition = Vector3.Lerp(oldPosition, newPosition, animationCompleted);
         currentPosition.y += Mathf.Sin(animationCompleted * Mathf.PI) * stepHeight;
+        currentPosition = Quaternion.FromToRotation(enteringForward, body.forward) * (currentPosition - body.position) + body.position;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
     }
     private void FindHit(Vector3 rayOrigin)
@@ -197,6 +200,11 @@ public class IKFootSolver : MonoBehaviour
         //float distanceIncrement = 0;
         Debug.Log("FINDING RECOVERY");
         //if distance increment gets bigger than stepLength (max distance that foot can be away from body), then hit obviously won't be found
+
+
+
+
+        //1ST CHECK IF FOOT IS ALREADY GROUNDED => NO NEED TO GO THROUGH WHILE LOOP IF IT IS
         while (!hitFound && angle >= 180f)
         {
             Vector3 pointOnPlane = CalculatePointOnPlane(angle);
