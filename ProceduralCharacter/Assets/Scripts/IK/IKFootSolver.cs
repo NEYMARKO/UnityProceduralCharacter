@@ -31,6 +31,7 @@ public class IKFootSolver : MonoBehaviour
     float sphereCastRadius = 0.05f;
     Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
+    Vector3 enteringBodyForward = Vector3.zero;
     Transform body;
     float animationCompleted;
     bool previouslyMoved = false;
@@ -86,6 +87,7 @@ public class IKFootSolver : MonoBehaviour
             FindHit(GetMovingFootRayCastPosition(stepLength));
             newPosition = hit.point;
             newNormal = hit.normal;
+            enteringBodyForward = body.forward;
         }
         if (animationCompleted < 1f)
         {
@@ -104,12 +106,18 @@ public class IKFootSolver : MonoBehaviour
         }
         else
         {
-            if (oldNormal != newNormal)
-            {
-                footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
-                transform.rotation = footRotator * oldToeRotation;
-                //transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
-            }
+            //OPTIMIZATION OPPURTUNUITY - NO NEED TO UPDATE IT EVERY TIME
+            footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
+            transform.rotation = footRotator * oldToeRotation;
+
+            ////if body has changed it's forward vector (for example if you are heading up the slope, your feet will get
+            ////rotated in some way, but if you are coming down that slope again, you would want them to be rotated differently
+            ////slope will have different normal, but you will be heading in the opposite direction
+            //if (oldNormal != newNormal || Vector3.Angle(enteringBodyForward, body.forward) >= 90f)
+            //{
+                
+            //    //transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
+            //}
             // leg has been moved - it can free other leg so it could move next
             if (FootMoved()) otherFoot.previouslyMoved = false;
             oldPosition = newPosition;
