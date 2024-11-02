@@ -35,7 +35,7 @@ public class IKFootSolver : MonoBehaviour
     float animationCompleted;
     bool previouslyMoved = false;
     RaycastHit hit, bodyAlignedHit, recoveryHit;
-    Quaternion oldToeRotation;
+    Quaternion oldToeRotation, footRotator = Quaternion.identity;
     Quaternion lastPlayerRotation;
     [Header("Recovery")]
     [SerializeField] float recoverySpeed;
@@ -76,7 +76,7 @@ public class IKFootSolver : MonoBehaviour
     void Update()
     {
         //transform.position = !proceduralMovement.DetectedMovementInput() ? recoveryHit.point : currentPosition + newNormal * footHeightOffset;
-        transform.position = currentPosition + newNormal * footHeightOffset;
+        transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
         UpdateBodyAlignedHit();
         
         if (ShouldMove())
@@ -106,7 +106,9 @@ public class IKFootSolver : MonoBehaviour
         {
             if (oldNormal != newNormal)
             {
-                transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
+                footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
+                transform.rotation = footRotator * oldToeRotation;
+                //transform.rotation = Quaternion.LookRotation(body.forward, newNormal) * oldToeRotation;
             }
             // leg has been moved - it can free other leg so it could move next
             if (FootMoved()) otherFoot.previouslyMoved = false;
