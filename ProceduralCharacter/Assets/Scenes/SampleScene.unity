@@ -15516,14 +15516,13 @@ MonoBehaviour:
   - {fileID: 1071664311}
   proceduralMovement: {fileID: 1365442991}
   otherFoot: {fileID: 2051067454}
+  footTransform: {fileID: 1071664311}
   speed: 2
   stepDistance: 0.5
   stepLength: 0.3
   stepHeight: 0.2
   footHeightOffset: 0.075
-  kneePosition: {x: 0, y: 0.75, z: 0}
-  footTransform: {fileID: 1071664311}
-  angleOffsetTolerance: 1
+  kneeHeightOffset: 0.75
   recoverySpeed: 5
 --- !u!43 &928036040
 Mesh:
@@ -26343,14 +26342,13 @@ MonoBehaviour:
   - {fileID: 2126376450}
   proceduralMovement: {fileID: 1365442991}
   otherFoot: {fileID: 899420989}
+  footTransform: {fileID: 2126376450}
   speed: 2
   stepDistance: 0.5
   stepLength: 0.3
   stepHeight: 0.2
   footHeightOffset: 0.075
-  kneePosition: {x: 0, y: 0.75, z: 0}
-  footTransform: {fileID: 2126376450}
-  angleOffsetTolerance: 1
+  kneeHeightOffset: 0.75
   recoverySpeed: 5
 --- !u!4 &2054772778 stripped
 Transform:
@@ -26537,7 +26535,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.48
+      value: -11.08
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.y
