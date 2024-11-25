@@ -15523,7 +15523,7 @@ MonoBehaviour:
   stepHeight: 0.2
   footHeightOffset: 0.075
   kneeHeightOffset: 0.75
-  angleTolerance: 5
+  angleTolerance: 1
   recoverySpeed: 5
   movementBoxColor: {r: 0.91823894, g: 0.48267594, b: 0.10106393, a: 0.7882353}
   movementBoxBoundingLineColor: {r: 0.2754886, g: 0.9559748, b: 0.07515505, a: 0}
@@ -26352,7 +26352,7 @@ MonoBehaviour:
   stepHeight: 0.2
   footHeightOffset: 0.075
   kneeHeightOffset: 0.75
-  angleTolerance: 5
+  angleTolerance: 1
   recoverySpeed: 5
   movementBoxColor: {r: 0.9748427, g: 0.33419618, b: 0.02145864, a: 0}
   movementBoxBoundingLineColor: {r: 0, g: 0, b: 0, a: 0}

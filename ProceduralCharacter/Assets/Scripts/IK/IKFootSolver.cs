@@ -56,6 +56,7 @@ public class IKFootSolver : MonoBehaviour
     float positionSmoothFactor = 2f;
 
     private Vector3 initialFootOffset;
+    private Vector3 localNewPosition, localOldPosition;
 
     struct Plane
     {
@@ -94,19 +95,13 @@ public class IKFootSolver : MonoBehaviour
         transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
         UpdateBodyAlignedHit();
 
-        RaycastHit nHit;
-        RaycastHit oHit;
-        Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset + body.forward * (1 - Mathf.Clamp(animationCompleted, 0f, 1f)) * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
-            , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
-        //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
-        //    , sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
-        helperNewPos = nHit.point;
+       
         //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
 
         if (startingLeg)
         {
-            Debug.Log($"NEW POS: {helperNewPos}");
-            Debug.Log($"OLD POS: {helperOldPos}");
+            Debug.Log($"NEW POS: {newPosition}");
+            Debug.Log($"OLD POS: {oldPosition}");
         }
         //helperOldPos = oHit.point;
         //if (Vector3.Angle(previousForwardDirection, body.forward) > angleTolerance)
@@ -137,16 +132,32 @@ public class IKFootSolver : MonoBehaviour
             newPosition = hit.point;
             newNormal = hit.normal;
             helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-            helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
+            //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
 
-            initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - body.position) / 2;
+            initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
+            //localNewPosition = body.InverseTransformPoint(newPosition);
 
         }
         if (animationCompleted < 1f && previouslyMoved)
         {
-            Physics.SphereCast(body.position + body.rotation * initialFootOffset + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
+
+            RaycastHit nHit;
+            RaycastHit oHit;
+            //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset + body.forward * (1 - Mathf.Clamp(animationCompleted, 0f, 1f)) * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
+            //    , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
+            Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
+                , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
+            Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
+            //    , sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            helperNewPos = nHit.point;
+            //helperOldPos = oHit.point;
+            //Physics.SphereCast(body.TransformPoint(localNewPosition) + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
+
+            //Physics.SphereCast(bodyAlignedHit.point + body.rotation * initialFootOffset + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
+
             //newPosition = body.position + body.rotation * initialFootOffset;
-            newPosition = nHit.point;
+            //newPosition = nHit.point;
             AnimateStep();
             animationCompleted += !proceduralMovement.DetectedMovementInput() ? Time.deltaTime * recoverySpeed : Time.deltaTime * speed;
             //helperHalfPoint = proceduralMovement.transform.position + proceduralMovement.transform.forward * 
@@ -160,6 +171,7 @@ public class IKFootSolver : MonoBehaviour
             transform.rotation = footRotator * defaultToeRotation;
 
             if (FootMoved()) otherFoot.previouslyMoved = false;
+            helperOldPos = helperNewPos;
             oldPosition = newPosition;
             oldNormal = newNormal;
         }
@@ -176,8 +188,8 @@ public class IKFootSolver : MonoBehaviour
     }
     private void AnimateStep()
     {
-        //currentPosition = Vector3.Lerp(helperOldPos, helperNewPos, animationCompleted);
-        currentPosition = Vector3.Lerp(oldPosition, newPosition, animationCompleted);
+        currentPosition = Vector3.Lerp(helperOldPos, helperNewPos, animationCompleted);
+        //currentPosition = Vector3.Lerp(oldPosition, newPosition, animationCompleted);
         currentPosition.y += Mathf.Sin(animationCompleted * Mathf.PI) * stepHeight;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
     }
@@ -297,11 +309,13 @@ public class IKFootSolver : MonoBehaviour
     {
         Gizmos.color = Color.red;
 
-        Gizmos.DrawCube(newPosition, new Vector3(0.2f, 0.2f, 0.2f));
+        Gizmos.DrawCube(helperNewPos, new Vector3(0.075f, 0.075f, 0.075f));
+        //Gizmos.DrawCube(newPosition, new Vector3(0.2f, 0.2f, 0.2f));
 
         Gizmos.color = Color.blue;
 
-        Gizmos.DrawCube(oldPosition, new Vector3(0.2f, 0.2f, 0.2f));
+        Gizmos.DrawCube(helperOldPos, new Vector3(0.075f, 0.075f, 0.075f));
+        //Gizmos.DrawCube(oldPosition, new Vector3(0.2f, 0.2f, 0.2f));
         //Gizmos.color = Color.green;
         //Gizmos.DrawLine(oldPosition, newPosition);
 
