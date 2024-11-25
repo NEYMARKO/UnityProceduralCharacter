@@ -15523,7 +15523,10 @@ MonoBehaviour:
   stepHeight: 0.2
   footHeightOffset: 0.075
   kneeHeightOffset: 0.75
+  angleTolerance: 5
   recoverySpeed: 5
+  movementBoxColor: {r: 0.91823894, g: 0.48267594, b: 0.10106393, a: 0.7882353}
+  movementBoxBoundingLineColor: {r: 0.2754886, g: 0.9559748, b: 0.07515505, a: 0}
 --- !u!43 &928036040
 Mesh:
   m_ObjectHideFlags: 0
@@ -26349,7 +26352,10 @@ MonoBehaviour:
   stepHeight: 0.2
   footHeightOffset: 0.075
   kneeHeightOffset: 0.75
+  angleTolerance: 5
   recoverySpeed: 5
+  movementBoxColor: {r: 0.9748427, g: 0.33419618, b: 0.02145864, a: 0}
+  movementBoxBoundingLineColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!4 &2054772778 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 791856303518455075, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
