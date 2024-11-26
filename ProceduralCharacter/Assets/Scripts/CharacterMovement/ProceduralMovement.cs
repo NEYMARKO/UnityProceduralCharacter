@@ -55,6 +55,7 @@ public class ProceduralMovement : MonoBehaviour
         Vector3 temp = transform.position;
         temp.y = currentHipsPos.y;
         transform.position = temp;
+        //Debug.Log($"OLD, NEW: {oldHipsPos}, {newHipsPos}");
         if (oldHipsPos.y != newHipsPos.y && !hipsAnimating)
         {
             lerp = 0f;
@@ -109,9 +110,14 @@ public class ProceduralMovement : MonoBehaviour
 
     private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
-        if (hipsAnimating) return;
+        //if (!hipsAnimating) return;
+        //if (lerp >= 1) return;
+        //Debug.Log("LERP: " + lerp);
         newHipsPos = transform.position;
         newHipsPos.y = Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
+        //Debug.Log($"LEFT HEIGHT, RIGHT HEIGHT: ({leg1Height}, {leg2Height})");
+        //newHipsPos.y = leftLeg.MovingUp() ? Mathf.Max(leg1Height, leg2Height) - hipsLoweredAmount : Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
+        //transform.position = newHipsPos;
     }
     private void AnimateHipsHeightChange()
     {

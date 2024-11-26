@@ -29,7 +29,7 @@ public class IKFootSolver : MonoBehaviour
     //foot side offset from the center of the body
     float footSpacing;
     float sphereCastRadius = 0.05f;
-    Vector3 oldPosition, currentPosition, newPosition;
+    public Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
     Transform body;
     float animationCompleted;
@@ -87,6 +87,8 @@ public class IKFootSolver : MonoBehaviour
         oldBodyPos = body.position;
         animationCompleted = 1f;
 
+        helperOldPos = oldPosition;
+        
         defaultToeRotation = footTransform.rotation;
     }
 
@@ -98,11 +100,11 @@ public class IKFootSolver : MonoBehaviour
        
         //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
 
-        if (startingLeg)
-        {
-            Debug.Log($"NEW POS: {newPosition}");
-            Debug.Log($"OLD POS: {oldPosition}");
-        }
+        //if (startingLeg)
+        //{
+        //    Debug.Log($"NEW POS: {newPosition}");
+        //    Debug.Log($"OLD POS: {oldPosition}");
+        //}
         //helperOldPos = oHit.point;
         //if (Vector3.Angle(previousForwardDirection, body.forward) > angleTolerance)
         //{
@@ -133,9 +135,12 @@ public class IKFootSolver : MonoBehaviour
             newNormal = hit.normal;
             helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
             //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-
-            initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
-            //localNewPosition = body.InverseTransformPoint(newPosition);
+            helperOldPos = oldPosition;
+            //initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
+            
+            //IT IS SAVED RELATIVE TO THE BODY IN THE POINT IN TIME WHEN BODY HASN'T STARTED MOVING - IT WILL ALWAYS BE RIGHT NEXT TO BODY WHEN CONVERTED TO WORLD COORDINATES
+            //IT SHOULD BE SAVED RELATIVE TO NEW POSITION - THERE NEEDS TO BE TRANSFORM THAT HAS POSITION OF NEWPOSITION
+            localOldPosition = body.InverseTransformPoint(helperOldPos);
 
         }
         if (animationCompleted < 1f && previouslyMoved)
@@ -147,11 +152,13 @@ public class IKFootSolver : MonoBehaviour
             //    , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
             Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
                 , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
-            Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            //Physics.SphereCast(body.TransformPoint(localOldPosition) + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
             //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
             //    , sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
             helperNewPos = nHit.point;
-            //helperOldPos = oHit.point;
+            helperOldPos = body.TransformPoint(localOldPosition);
+            //helperOldPos = helperNewPos - body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
+            //helperOldPos = oldBodyPos + body.right * footSpacing;
             //Physics.SphereCast(body.TransformPoint(localNewPosition) + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
 
             //Physics.SphereCast(bodyAlignedHit.point + body.rotation * initialFootOffset + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
@@ -177,6 +184,20 @@ public class IKFootSolver : MonoBehaviour
         }
     }
     
+    public bool MovingUp()
+    {
+        if (startingLeg)
+        {
+            //Debug.Log($"HNP, OHNP: {helperNewPos.y}, {otherFoot.helperNewPos.y}");
+        }
+        return previouslyMoved ? (helperNewPos.y - otherFoot.helperNewPos.y >= 0.01f) : (helperNewPos.y - otherFoot.helperNewPos.y <= 0.01f);
+    }
+
+    public bool MovingDown()
+    {
+        return !MovingUp();
+    }
+
     private float CalculateIKChainLength()
     {
         float length = 0f;
@@ -302,7 +323,8 @@ public class IKFootSolver : MonoBehaviour
     }
     public float GetTargetHeight()
     {
-        return newPosition.y;
+        return currentPosition.y;
+        //return newPosition.y;
     }
 
     private void OnDrawGizmos()
