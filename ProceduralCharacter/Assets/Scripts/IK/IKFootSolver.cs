@@ -64,7 +64,6 @@ public class IKFootSolver : MonoBehaviour
         public float D;
     }
     Plane intersectionPlane;
-    
     void Start()
     {
         footSpacing = transform.localPosition.x;
@@ -74,11 +73,11 @@ public class IKFootSolver : MonoBehaviour
         
         if (startingLeg)
         {
-            transform.position = body.position + body.right * footSpacing - body.forward * stepLength;
+            //transform.position = body.position + body.right * footSpacing - body.forward * stepLength;
         }
         else
         {
-            transform.position = body.position + body.right * footSpacing + body.forward * stepLength;
+            //transform.position = body.position + body.right * footSpacing + body.forward * stepLength;
             previouslyMoved = true;
         }
         
@@ -90,11 +89,13 @@ public class IKFootSolver : MonoBehaviour
         helperOldPos = oldPosition;
         
         defaultToeRotation = footTransform.rotation;
+
     }
 
     void Update()
     {
-        transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
+        //transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
+        //transform.position = footTransform.position;
         UpdateBodyAlignedHit();
 
        

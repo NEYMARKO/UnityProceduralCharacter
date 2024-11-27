@@ -37,6 +37,9 @@ public class ProceduralMovement : MonoBehaviour
 
     public event Action OnMovementStopped;
 
+    #region Animation
+    Animator animator;
+    #endregion
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -46,6 +49,7 @@ public class ProceduralMovement : MonoBehaviour
     private void Start()
     {
         oldHipsPos = currentHipsPos = newHipsPos = transform.position;
+        animator = GetComponentInChildren<Animator>();
     }
     void Update()
     {
@@ -78,10 +82,11 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();
         if (DetectedMovementInput())
         {
+            animator.SetBool("isWalking", true);
             UpdateForwardDirection();
             transform.position += transform.forward * movementSpeed * Time.deltaTime;
         }
-        else OnMovementStopped?.Invoke();
+        else animator.SetBool("isWalking", false);
     }
 
     private void RotateCharacter(float rotationAngle)
