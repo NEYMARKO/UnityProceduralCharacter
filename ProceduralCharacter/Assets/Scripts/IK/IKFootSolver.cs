@@ -48,12 +48,7 @@ public class IKFootSolver : MonoBehaviour
 
     Vector3 helperNewPos;
     Vector3 helperOldPos;
-    Vector3 helperHalfPoint;
-    Vector3 _hp;
     float lineLength;
-    Vector3 averageForward;
-    float forwardAverageSmoothFactor = 2f;
-    float positionSmoothFactor = 2f;
 
     private Vector3 initialFootOffset;
     private Vector3 localNewPosition, localOldPosition;
@@ -97,32 +92,9 @@ public class IKFootSolver : MonoBehaviour
         transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
         UpdateBodyAlignedHit();
 
-       
-        //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-
-        //if (startingLeg)
-        //{
-        //    Debug.Log($"NEW POS: {newPosition}");
-        //    Debug.Log($"OLD POS: {oldPosition}");
-        //}
-        //helperOldPos = oHit.point;
-        //if (Vector3.Angle(previousForwardDirection, body.forward) > angleTolerance)
-        //{
-        //    helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-        //    helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-        //}
-
-        //averageForward = Vector3.Lerp(averageForward, body.forward, Time.deltaTime * forwardAverageSmoothFactor);
-
-        //Vector3 targetHelperNewPos = bodyAlignedHit.point + averageForward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-        //Vector3 targetHelperOldPos = bodyAlignedHit.point - averageForward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-
-        //helperNewPos = Vector3.Lerp(helperNewPos, targetHelperNewPos, Time.deltaTime * positionSmoothFactor);
-        //helperOldPos = Vector3.Lerp(helperOldPos, targetHelperOldPos, Time.deltaTime * positionSmoothFactor);
-
-
         if (ShouldMove())
         {
+            RaycastHit oHit;
             previouslyMoved = true;
             animationCompleted = 0f;
             previousForwardDirection = body.forward;
@@ -135,6 +107,8 @@ public class IKFootSolver : MonoBehaviour
             newNormal = hit.normal;
             helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
             //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
+            Physics.SphereCast(footTransform.position + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            oldPosition = oHit.point;
             helperOldPos = oldPosition;
             //initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
             
@@ -147,7 +121,7 @@ public class IKFootSolver : MonoBehaviour
         {
 
             RaycastHit nHit;
-            RaycastHit oHit;
+            
             //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset + body.forward * (1 - Mathf.Clamp(animationCompleted, 0f, 1f)) * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
             //    , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
             Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
@@ -376,7 +350,6 @@ public class IKFootSolver : MonoBehaviour
         //Quaternion rotation = Quaternion.FromToRotation(previousForwardDirection, proceduralMovement.transform.forward);
         //_hp = rotation * (helperHalfPoint - oldBodyPos) + proceduralMovement.transform.position;
         Gizmos.color = movementBoxColor;
-        Gizmos.DrawCube(helperHalfPoint, new Vector3(0.1f, 0.1f, 0.1f));
         //helperNewPos = GetStationaryFootRayCastPosition() + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed()/speed + stepLength);
         //helperOldPos = GetStationaryFootRayCastPosition() - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed()/speed + stepLength);
 
