@@ -21873,6 +21873,7 @@ MonoBehaviour:
   oldPosition: {x: 0, y: 0, z: 0}
   currentPosition: {x: 0, y: 0, z: 0}
   newPosition: {x: 0, y: 0, z: 0}
+  animationCompleted: 0
   recoverySpeed: 5
   movementBoxColor: {r: 0.91823894, g: 0.48267594, b: 0.10106393, a: 0.7882353}
   movementBoxBoundingLineColor: {r: 0.2754886, g: 0.9559748, b: 0.07515505, a: 0}
@@ -25979,7 +25980,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  movementSpeed: 1.5
+  movementSpeed: 1.25
   rotationSpeed: 750
   _camera: {fileID: 1326437394}
   hipsLoweredAmount: 0
@@ -38988,6 +38989,7 @@ MonoBehaviour:
   oldPosition: {x: 0, y: 0, z: 0}
   currentPosition: {x: 0, y: 0, z: 0}
   newPosition: {x: 0, y: 0, z: 0}
+  animationCompleted: 0
   recoverySpeed: 5
   movementBoxColor: {r: 0.9748427, g: 0.33419618, b: 0.02145864, a: 0}
   movementBoxBoundingLineColor: {r: 0, g: 0, b: 0, a: 0}
@@ -41004,7 +41006,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -11.08
+      value: 2.59
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -41012,7 +41014,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.33
+      value: -2.23
       objectReference: {fileID: 0}
     - target: {fileID: 785064255842850154, guid: e43a370f85ed0ef4cacefe6fd66b48c1, type: 3}
       propertyPath: m_LocalRotation.w

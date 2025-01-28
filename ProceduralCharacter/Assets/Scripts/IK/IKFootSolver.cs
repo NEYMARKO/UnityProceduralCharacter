@@ -32,7 +32,7 @@ public class IKFootSolver : MonoBehaviour
     public Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
     Transform body;
-    float animationCompleted;
+    public float animationCompleted;
     bool previouslyMoved = false;
     RaycastHit hit, bodyAlignedHit, recoveryHit;
     Quaternion defaultToeRotation, footRotator = Quaternion.identity;
@@ -59,7 +59,10 @@ public class IKFootSolver : MonoBehaviour
         public float D;
     }
     Plane intersectionPlane;
-    
+
+    float oldHeight = 0f;
+    RaycastHit nHit;
+
     void Start()
     {
         footSpacing = transform.localPosition.x;
@@ -107,7 +110,9 @@ public class IKFootSolver : MonoBehaviour
             newNormal = hit.normal;
             helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
             //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-            Physics.SphereCast(footTransform.position + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            //Physics.SphereCast(footTransform.position + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            //Physics.Raycast(footTransform.position + Vector3.up * footHeightOffset, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+            Physics.SphereCast(footTransform.position + Vector3.up * footHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
             oldPosition = oHit.point;
             helperOldPos = oldPosition;
             //initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
@@ -120,7 +125,6 @@ public class IKFootSolver : MonoBehaviour
         if (animationCompleted < 1f && previouslyMoved)
         {
 
-            RaycastHit nHit;
             
             //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset + body.forward * (1 - Mathf.Clamp(animationCompleted, 0f, 1f)) * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
             //    , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
@@ -297,7 +301,10 @@ public class IKFootSolver : MonoBehaviour
     }
     public float GetTargetHeight()
     {
-        return currentPosition.y;
+        //helperNewPos.y works for walking down the slope, currentPosition.y works for walking up the obstacles
+        return Mathf.Min(currentPosition.y, helperNewPos.y);
+        //oldHeight = (oldHeight >= helperNewPos.y && nHit.normal != Vector3.up) ? helperNewPos.y : currentPosition.y;
+        //return oldHeight;
         //return newPosition.y;
     }
 
@@ -356,6 +363,8 @@ public class IKFootSolver : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawLine(helperOldPos, helperNewPos);
         Gizmos.DrawSphere(currentPosition, sphereCastRadius);
-        
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(helperNewPos, sphereCastRadius);
     }
 }

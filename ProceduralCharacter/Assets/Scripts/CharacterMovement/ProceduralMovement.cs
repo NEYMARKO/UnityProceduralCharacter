@@ -66,7 +66,7 @@ public class ProceduralMovement : MonoBehaviour
             AnimateHipsHeightChange();
             lerp += hipsAnimationSpeed * Time.deltaTime;
         }
-        else
+        else if (lerp >= 1 || leftLeg.animationCompleted >= 1 || rightLeg.animationCompleted >= 1)
         {
             oldHipsPos = newHipsPos;
             hipsAnimating = false;
