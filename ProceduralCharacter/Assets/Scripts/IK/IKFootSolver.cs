@@ -105,17 +105,13 @@ public class IKFootSolver : MonoBehaviour
             oldBodyPos = body.position;
             otherFoot.oldBodyPos = oldBodyPos;
             FindHit(GetMovingFootRayCastPosition(stepLength));
-            //oldPosition = Quaternion.FromToRotation(previousForwardDirection, body.forward) * (oldPosition - body.position) + body.position;
             newPosition = hit.point;
             newNormal = hit.normal;
             helperNewPos = bodyAlignedHit.point + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-            //helperOldPos = bodyAlignedHit.point - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-            //Physics.SphereCast(footTransform.position + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
-            //Physics.Raycast(footTransform.position + Vector3.up * footHeightOffset, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+
             Physics.SphereCast(footTransform.position + Vector3.up * footHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
             oldPosition = oHit.point;
             helperOldPos = oldPosition;
-            //initialFootOffset = Quaternion.Inverse(body.rotation) * (newPosition - bodyAlignedHit.point);
             
             //IT IS SAVED RELATIVE TO THE BODY IN THE POINT IN TIME WHEN BODY HASN'T STARTED MOVING - IT WILL ALWAYS BE RIGHT NEXT TO BODY WHEN CONVERTED TO WORLD COORDINATES
             //IT SHOULD BE SAVED RELATIVE TO NEW POSITION - THERE NEEDS TO BE TRANSFORM THAT HAS POSITION OF NEWPOSITION
@@ -125,29 +121,15 @@ public class IKFootSolver : MonoBehaviour
         if (animationCompleted < 1f && previouslyMoved)
         {
 
-            
-            //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset + body.forward * (1 - Mathf.Clamp(animationCompleted, 0f, 1f)) * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
-            //    , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
             Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
                 , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
-            //Physics.SphereCast(body.TransformPoint(localOldPosition) + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
-            //Physics.SphereCast(bodyAlignedHit.point + Vector3.up * kneeHeightOffset - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
-            //    , sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
+
             helperNewPos = nHit.point;
             helperOldPos = body.TransformPoint(localOldPosition);
-            //helperOldPos = helperNewPos - body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength);
-            //helperOldPos = oldBodyPos + body.right * footSpacing;
-            //Physics.SphereCast(body.TransformPoint(localNewPosition) + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
 
-            //Physics.SphereCast(bodyAlignedHit.point + body.rotation * initialFootOffset + Vector3.up * kneeHeightOffset, sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
-
-            //newPosition = body.position + body.rotation * initialFootOffset;
-            //newPosition = nHit.point;
             AnimateStep();
             animationCompleted += !proceduralMovement.DetectedMovementInput() ? Time.deltaTime * recoverySpeed : Time.deltaTime * speed;
-            //helperHalfPoint = proceduralMovement.transform.position + proceduralMovement.transform.forward * 
-            //    (proceduralMovement.GetMovementSpeed() / speed + stepLength) * animationCompleted
-            //    + body.right * footSpacing;
+
         }
         else
         {
@@ -251,9 +233,6 @@ public class IKFootSolver : MonoBehaviour
         Debug.Log("FINDING RECOVERY");
         //if distance increment gets bigger than stepLength (max distance that foot can be away from body), then hit obviously won't be found
 
-
-
-
         //1ST CHECK IF FOOT IS ALREADY GROUNDED => NO NEED TO GO THROUGH WHILE LOOP IF IT IS
         while (!hitFound && angle >= 180f)
         {
@@ -302,63 +281,21 @@ public class IKFootSolver : MonoBehaviour
     public float GetTargetHeight()
     {
         //helperNewPos.y works for walking down the slope, currentPosition.y works for walking up the obstacles
+        //return Mathf.Min(currentPosition.y, bodyAlignedHit.point.y);
         return Mathf.Min(currentPosition.y, helperNewPos.y);
-        //oldHeight = (oldHeight >= helperNewPos.y && nHit.normal != Vector3.up) ? helperNewPos.y : currentPosition.y;
-        //return oldHeight;
-        //return newPosition.y;
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
+        //Gizmos.color = Color.red;
 
-        Gizmos.DrawCube(helperNewPos, new Vector3(0.075f, 0.075f, 0.075f));
-        //Gizmos.DrawCube(newPosition, new Vector3(0.2f, 0.2f, 0.2f));
+        //Gizmos.DrawCube(helperNewPos, new Vector3(0.075f, 0.075f, 0.075f));
 
-        Gizmos.color = Color.blue;
+        //Gizmos.color = Color.blue;
 
-        Gizmos.DrawCube(helperOldPos, new Vector3(0.075f, 0.075f, 0.075f));
-        //Gizmos.DrawCube(oldPosition, new Vector3(0.2f, 0.2f, 0.2f));
-        //Gizmos.color = Color.green;
-        //Gizmos.DrawLine(oldPosition, newPosition);
+        //Gizmos.DrawCube(helperOldPos, new Vector3(0.075f, 0.075f, 0.075f));
 
-        //Gizmos.color = Color.magenta;
-        //Gizmos.DrawSphere(recoveryHit.point, sphereCastRadius);
-        //Gizmos.color = Color.yellow;
-        //Gizmos.DrawSphere(footTransform.position, sphereCastRadius);
-        //Gizmos.color = Color.black;
-
-        //CalculatePlaneParameters(body.right, Vector3.zero);
-        //Quaternion rotationToPlane = Quaternion.FromToRotation(Vector3.right, intersectionPlane.normal);
-        //Quaternion rotationToSlope = Quaternion.FromToRotation(Vector3.up, newNormal);
-        //for (int i = 360; i >= 180; i--)
-        //{
-        //    Vector3 pointOnPlane = CalculatePointOnPlane(i);
-
-        //    // Rotate the point to align with the plane and move to world position
-        //    pointOnPlane = rotationToPlane * pointOnPlane;
-        //    pointOnPlane = rotationToSlope * pointOnPlane;
-        //    pointOnPlane += body.position + newNormal * chainLength;
-        //    Gizmos.DrawCube(pointOnPlane, new Vector3(sphereCastRadius, sphereCastRadius, sphereCastRadius));
-        //}
-
-        //if (startingLeg)
-        //{
-        //    //movementBoxDimensions =  new Vector3(footSpacing * 2, 0f, proceduralMovement.GetMovementMagnitude() + stepLength);
-        //    Gizmos.matrix = Matrix4x4.TRS(proceduralMovement.transform.position + new Vector3(0f, 0.05f, 0f) /*+ proceduralMovement.transform.forward * (proceduralMovement.GetMovementSpeed()/speed + stepLength)*/,
-        //        Quaternion.identity, new Vector3(footSpacing * 2, 0f, proceduralMovement.GetMovementMagnitude() + stepLength));
-        //    Gizmos.color = movementBoxColor;
-        //    Gizmos.DrawCube(Vector3.zero + proceduralMovement.transform.forward * (proceduralMovement.GetMovementMagnitude() + stepLength) / 2, new Vector3(1f, 1f, 1f));
-        //    Gizmos.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
-        //    Gizmos.color = Color.red;
-        //    Gizmos.DrawLine(proceduralMovement.transform.position, proceduralMovement.transform.position + proceduralMovement.transform.forward * 5f);
-        //}
-
-        //Quaternion rotation = Quaternion.FromToRotation(previousForwardDirection, proceduralMovement.transform.forward);
-        //_hp = rotation * (helperHalfPoint - oldBodyPos) + proceduralMovement.transform.position;
-        Gizmos.color = movementBoxColor;
-        //helperNewPos = GetStationaryFootRayCastPosition() + body.forward * (1 - animationCompleted) * (proceduralMovement.GetMovementSpeed()/speed + stepLength);
-        //helperOldPos = GetStationaryFootRayCastPosition() - body.forward * animationCompleted * (proceduralMovement.GetMovementSpeed()/speed + stepLength);
+        //Gizmos.color = movementBoxColor;
 
         Gizmos.color = Color.red;
         Gizmos.DrawLine(helperOldPos, helperNewPos);

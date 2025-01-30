@@ -37,6 +37,9 @@ public class ProceduralMovement : MonoBehaviour
 
     public event Action OnMovementStopped;
 
+    float leftLegHeight = 0f, rightLegHeight = 0f;
+
+
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -110,18 +113,14 @@ public class ProceduralMovement : MonoBehaviour
 
     private void ModifyHipsHeight(float leg1Height, float leg2Height)
     {
-        //if (!hipsAnimating) return;
-        //if (lerp >= 1) return;
-        //Debug.Log("LERP: " + lerp);
         newHipsPos = transform.position;
+        leftLegHeight = leg1Height;
+        rightLegHeight = leg2Height;
+        //newHipsPos.y = Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
         newHipsPos.y = Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
-        //Debug.Log($"LEFT HEIGHT, RIGHT HEIGHT: ({leg1Height}, {leg2Height})");
-        //newHipsPos.y = leftLeg.MovingUp() ? Mathf.Max(leg1Height, leg2Height) - hipsLoweredAmount : Mathf.Min(leg1Height, leg2Height) - hipsLoweredAmount;
-        //transform.position = newHipsPos;
     }
     private void AnimateHipsHeightChange()
     {
-        //currentHipsPos = transform.position;
         currentHipsPos = Vector3.Lerp(oldHipsPos, newHipsPos, lerp);
     }
     public float GetMovementSpeed()
@@ -151,5 +150,26 @@ public class ProceduralMovement : MonoBehaviour
     private void OnDisable()
     {
         movementAction.Disable();
+    }
+
+    private void OnDrawGizmos()
+    {
+        //Gizmos.color = Color.red;
+
+        //Gizmos.DrawCube(helperNewPos, new Vector3(0.075f, 0.075f, 0.075f));
+
+        //Gizmos.color = Color.blue;
+
+        //Gizmos.DrawCube(helperOldPos, new Vector3(0.075f, 0.075f, 0.075f));
+
+        //Gizmos.color = movementBoxColor;
+
+        Gizmos.color = Color.blue;
+        Vector3 leftLegPos = leftLeg.transform.position;
+        leftLegPos.y = leftLegHeight;
+        Vector3 rightLegPos = rightLeg.transform.position;
+        rightLegPos.y = rightLegHeight;
+        Gizmos.DrawCube(leftLegPos, new Vector3(0.1f, 0.1f, 0.1f));
+        Gizmos.DrawCube(rightLegPos, new Vector3(0.1f, 0.1f, 0.1f));
     }
 }
