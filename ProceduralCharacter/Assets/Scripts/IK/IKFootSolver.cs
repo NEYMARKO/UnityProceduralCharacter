@@ -27,7 +27,7 @@ public class IKFootSolver : MonoBehaviour
     [SerializeField] float kneeHeightOffset;
     [SerializeField] float angleTolerance = 5f;
     //foot side offset from the center of the body
-    float footSpacing;
+    float footSideOffset;
     float sphereCastRadius = 0.05f;
     public Vector3 oldPosition, currentPosition, newPosition;
     Vector3 oldNormal, currentNormal, newNormal;
@@ -65,18 +65,19 @@ public class IKFootSolver : MonoBehaviour
 
     void Start()
     {
-        footSpacing = transform.localPosition.x;
+        footSideOffset = transform.localPosition.x;
         body = proceduralMovement.transform;
 
         chainLength = CalculateIKChainLength();
-
+        intersectionPlane = new Plane();
+        recoveryHit = new RaycastHit();
         if (startingLeg)
         {
-            transform.position = body.position + body.right * footSpacing - body.forward * stepLength;
+            transform.position = body.position + body.right * footSideOffset - body.forward * stepLength;
         }
         else
         {
-            transform.position = body.position + body.right * footSpacing + body.forward * stepLength;
+            transform.position = body.position + body.right * footSideOffset + body.forward * stepLength;
             previouslyMoved = true;
         }
 
@@ -92,7 +93,8 @@ public class IKFootSolver : MonoBehaviour
 
     void Update()
     {
-        transform.position = currentPosition + footRotator * Vector3.up * footHeightOffset;
+        //Debug.Log($"COLLIDER NAME: {(recoveryHit.collider == null ? "null" : recoveryHit.collider.name)}");
+        transform.position = recoveryHit.collider != null ? recoveryHit.point : currentPosition + footRotator * Vector3.up * footHeightOffset;
         UpdateBodyAlignedHit();
 
         if (ShouldMove())
@@ -121,21 +123,24 @@ public class IKFootSolver : MonoBehaviour
         if (animationCompleted < 1f && previouslyMoved)
         {
 
-            Physics.SphereCast(oldBodyPos + body.right * footSpacing + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
+            Physics.SphereCast(oldBodyPos + body.right * footSideOffset + Vector3.up * kneeHeightOffset + body.forward * (proceduralMovement.GetMovementSpeed() / speed + stepLength)
                 , sphereCastRadius, Vector3.down, out nHit, 1.5f, terrainLayer.value);
 
             helperNewPos = nHit.point;
             helperOldPos = body.TransformPoint(localOldPosition);
 
-            AnimateStep();
+            if (proceduralMovement.DetectedMovementInput())
+            {
+                AnimateStep();
+                AnimateFootRotation();
+            }
             animationCompleted += !proceduralMovement.DetectedMovementInput() ? Time.deltaTime * recoverySpeed : Time.deltaTime * speed;
-
         }
         else
         {
             //OPTIMIZATION OPPURTUNUITY - NO NEED TO UPDATE IT EVERY TIME
-            footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
-            transform.rotation = footRotator * defaultToeRotation;
+            //footRotator = Quaternion.FromToRotation(Vector3.up, newNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
+            //transform.rotation = footRotator * defaultToeRotation;
 
             if (FootMoved()) otherFoot.previouslyMoved = false;
             helperOldPos = helperNewPos;
@@ -174,6 +179,11 @@ public class IKFootSolver : MonoBehaviour
         currentPosition.y += Mathf.Sin(animationCompleted * Mathf.PI) * stepHeight;
         currentNormal = Vector3.Lerp(oldNormal, newNormal, animationCompleted);
     }
+    private void AnimateFootRotation()
+    {
+        footRotator = Quaternion.FromToRotation(Vector3.up, currentNormal) * Quaternion.FromToRotation(Vector3.forward, body.forward);
+        transform.rotation = footRotator * defaultToeRotation;
+    }
     private void FindHit(Vector3 rayOrigin)
     {
         Physics.SphereCast(rayOrigin, sphereCastRadius, Vector3.down, out hit, 1.5f, terrainLayer.value);
@@ -201,7 +211,7 @@ public class IKFootSolver : MonoBehaviour
     }
     private Vector3 GetStationaryFootRayCastPosition()
     {
-        return body.position + (body.right * footSpacing) + /*Quaternion.FromToRotation(Vector3.up, newNormal) **/ Vector3.up * kneeHeightOffset;
+        return body.position + (body.right * footSideOffset) + /*Quaternion.FromToRotation(Vector3.up, newNormal) **/ Vector3.up * kneeHeightOffset;
     }
 
     private Vector3 GetMovingFootRayCastPosition(float distanceLeft)
@@ -221,8 +231,9 @@ public class IKFootSolver : MonoBehaviour
     }
     private bool FindRecoveryHit()
     {
-        CalculatePlaneParameters(body.right, footTransform.position);
-
+        CalculatePlaneParameters(body.right, Vector3.zero);
+        Quaternion rotationToPlane = Quaternion.FromToRotation(Vector3.right, intersectionPlane.normal);
+        Quaternion rotationToSlope = Quaternion.FromToRotation(Vector3.up, newNormal);
         //Vector3 line = footTransform.position - 5 * newNormal;
         //Vector3 intersectionPoint = CalculateIntersection(line);
         //recoveryHit.point = intersectionPoint;
@@ -230,22 +241,39 @@ public class IKFootSolver : MonoBehaviour
         float angle = 360f;
         bool hitFound = false;
         //float distanceIncrement = 0;
-        Debug.Log("FINDING RECOVERY");
+        //Debug.Log("FINDING RECOVERY");
         //if distance increment gets bigger than stepLength (max distance that foot can be away from body), then hit obviously won't be found
+        int increment = 1;
 
+        float footPlaneAngle = GetFootAngleInPlane();
+        //currently active foot must move backwards, static foot must move forwards
+        //360 is forward, 180 is backward
+        increment = previouslyMoved == true ? -1 : 1;
+
+        int bound = previouslyMoved == true ? 180 : 360;
+        angle = footPlaneAngle;
         //1ST CHECK IF FOOT IS ALREADY GROUNDED => NO NEED TO GO THROUGH WHILE LOOP IF IT IS
-        while (!hitFound && angle >= 180f)
+        //[footAngle, 360] for static foot, [180, footAngle] for moving foot
+        //condition must work for both cases => [180, footAngle] is made into [-footAngle, -180] => this way condition works for both legs
+        while (angle * increment <= bound * increment)
         {
             Vector3 pointOnPlane = CalculatePointOnPlane(angle);
+            pointOnPlane = rotationToPlane * pointOnPlane;
+            pointOnPlane = rotationToSlope * pointOnPlane;
+            pointOnPlane += body.position + newNormal * chainLength;
             //Vector3 transformBackup = transform.position;
             //Physics.Raycast((footTransform.position - ((footTransform.position - body.position).normalized * distanceIncrement)), Vector3.down, out recoveryHit, 1.5f, terrainLayer.value);
-            Physics.Raycast(pointOnPlane, -newNormal, out recoveryHit, footHeightOffset, terrainLayer.value);
+            Physics.Raycast(pointOnPlane, Vector3.down, out recoveryHit, footHeightOffset, terrainLayer.value);
             //transform.position = transformBackup;
-            if (recoveryHit.point != Vector3.zero) hitFound = true;
+            if (recoveryHit.point != Vector3.zero)
+            {
+                Debug.Log($"ANGLE: {angle}");
+                break;
+            }
             //if (FootGrounded()) hitFound = true;
-            else angle -= 1f;
+            else angle += increment;
         }
-        Debug.Log("FINISHED RECOVERY");
+        //Debug.Log("FINISHED RECOVERY");
         //hit hasn't been found
         if (!hitFound) return false;
         else return true;
@@ -272,6 +300,11 @@ public class IKFootSolver : MonoBehaviour
         C = line.z / intersectionPlane.normal.z;
         return new Vector3(A, B, C);
     }
+
+    private float GetFootAngleInPlane()
+    {
+        return Mathf.Atan2(transform.position.y, transform.position.z) * Mathf.Rad2Deg;
+    }
     private bool FootGrounded()
     {
         transform.position = recoveryHit.point;
@@ -285,6 +318,28 @@ public class IKFootSolver : MonoBehaviour
         return Mathf.Min(currentPosition.y, helperNewPos.y);
     }
 
+    private void OnEnable()
+    {
+        proceduralMovement.OnMovementStopped += HandleMovementStopped;
+        proceduralMovement.OnMovementStarted += HandleMovementStarted;
+    }
+    private void OnDisable()
+    {
+        proceduralMovement.OnMovementStopped -= HandleMovementStopped;
+        proceduralMovement.OnMovementStarted -= HandleMovementStarted;
+    }
+    private void HandleMovementStopped()
+    {
+        FindRecoveryHit();
+        Debug.Log($"HIT POS: {recoveryHit.point}");
+        //Debug.Log("Movement stopped");
+    }
+    private void HandleMovementStarted()
+    {
+        //Physics.Raycast(new Vector3(0f, 20f, 0f), Vector3.up, out recoveryHit, footHeightOffset, terrainLayer.value);
+        recoveryHit = new RaycastHit();
+        //Debug.Log("Movement started");
+    }
     private void OnDrawGizmos()
     {
         //Gizmos.color = Color.red;
@@ -296,6 +351,27 @@ public class IKFootSolver : MonoBehaviour
         //Gizmos.DrawCube(helperOldPos, new Vector3(0.075f, 0.075f, 0.075f));
 
         //Gizmos.color = movementBoxColor;
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawSphere(recoveryHit.point, sphereCastRadius);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(footTransform.position, sphereCastRadius);
+
+
+        CalculatePlaneParameters(body.right, Vector3.zero);
+        Quaternion rotationToPlane = Quaternion.FromToRotation(Vector3.right, intersectionPlane.normal);
+        Quaternion rotationToSlope = Quaternion.FromToRotation(Vector3.up, newNormal);
+        for (int i = 360; i >= 180; i--)
+        {
+            Gizmos.color = Color.black;
+            Vector3 pointOnPlane = CalculatePointOnPlane(i);
+            // Rotate the point to align with the plane and move to world position
+            pointOnPlane = rotationToPlane * pointOnPlane;
+            pointOnPlane = rotationToSlope * pointOnPlane;
+            pointOnPlane += body.position + newNormal * chainLength;
+            Gizmos.DrawCube(pointOnPlane, new Vector3(sphereCastRadius, sphereCastRadius, sphereCastRadius));
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(pointOnPlane, pointOnPlane + Vector3.down * footHeightOffset);
+        }
 
         Gizmos.color = Color.red;
         Gizmos.DrawLine(helperOldPos, helperNewPos);

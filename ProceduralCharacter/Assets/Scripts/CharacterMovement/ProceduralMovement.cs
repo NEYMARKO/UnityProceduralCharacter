@@ -36,10 +36,11 @@ public class ProceduralMovement : MonoBehaviour
     Vector3 oldHipsPos, currentHipsPos, newHipsPos;
 
     public event Action OnMovementStopped;
+    public event Action OnMovementStarted;
 
     float leftLegHeight = 0f, rightLegHeight = 0f;
 
-
+    bool hasStopped = false;
     private void Awake()
     {
         playerInput = new PlayerInput();
@@ -81,10 +82,22 @@ public class ProceduralMovement : MonoBehaviour
         movementDirection = movementAction.ReadValue<Vector2>();
         if (DetectedMovementInput())
         {
+            if (hasStopped)
+            {
+                hasStopped = false;
+                OnMovementStarted?.Invoke();
+            }
             UpdateForwardDirection();
             transform.position += transform.forward * movementSpeed * Time.deltaTime;
         }
-        else OnMovementStopped?.Invoke();
+        else
+        {
+            if (!hasStopped)
+            {
+                hasStopped = true;
+                OnMovementStopped?.Invoke();
+            }
+        }
     }
 
     private void RotateCharacter(float rotationAngle)
