@@ -69,7 +69,7 @@ public class IKFootSolver : MonoBehaviour
         body = proceduralMovement.transform;
 
         chainLength = CalculateIKChainLength();
-        
+
         if (startingLeg)
         {
             transform.position = body.position + body.right * footSpacing - body.forward * stepLength;
@@ -79,14 +79,14 @@ public class IKFootSolver : MonoBehaviour
             transform.position = body.position + body.right * footSpacing + body.forward * stepLength;
             previouslyMoved = true;
         }
-        
+
         currentPosition = oldPosition = newPosition = transform.position;
         currentNormal = oldNormal = newNormal = Vector3.up;
         oldBodyPos = body.position;
         animationCompleted = 1f;
 
         helperOldPos = oldPosition;
-        
+
         defaultToeRotation = footTransform.rotation;
     }
 
@@ -112,7 +112,7 @@ public class IKFootSolver : MonoBehaviour
             Physics.SphereCast(footTransform.position + Vector3.up * footHeightOffset, sphereCastRadius, Vector3.down, out oHit, 1.5f, terrainLayer.value);
             oldPosition = oHit.point;
             helperOldPos = oldPosition;
-            
+
             //IT IS SAVED RELATIVE TO THE BODY IN THE POINT IN TIME WHEN BODY HASN'T STARTED MOVING - IT WILL ALWAYS BE RIGHT NEXT TO BODY WHEN CONVERTED TO WORLD COORDINATES
             //IT SHOULD BE SAVED RELATIVE TO NEW POSITION - THERE NEEDS TO BE TRANSFORM THAT HAS POSITION OF NEWPOSITION
             localOldPosition = body.InverseTransformPoint(helperOldPos);
@@ -143,7 +143,7 @@ public class IKFootSolver : MonoBehaviour
             oldNormal = newNormal;
         }
     }
-    
+
     public bool MovingUp()
     {
         if (startingLeg)
@@ -214,7 +214,7 @@ public class IKFootSolver : MonoBehaviour
     {
         return rotation * (objectPosition - pivot) + pivot;
     }
-    
+
     private void RecoverAnimation()
     {
 
@@ -267,9 +267,9 @@ public class IKFootSolver : MonoBehaviour
     private Vector3 CalculateIntersection(Vector3 line)
     {
         float A, B, C;
-        A = line.x/intersectionPlane.normal.x;
-        B = line.y/intersectionPlane.normal.y;
-        C = line.z/intersectionPlane.normal.z;
+        A = line.x / intersectionPlane.normal.x;
+        B = line.y / intersectionPlane.normal.y;
+        C = line.z / intersectionPlane.normal.z;
         return new Vector3(A, B, C);
     }
     private bool FootGrounded()
